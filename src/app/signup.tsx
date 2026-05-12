@@ -19,7 +19,6 @@ export default function Signup() {
 
     // Função que valida se o e-mail tem formato correto
     const validateEmail = (email: string) => {
-        // Regex: algo@algo.algo (ex: usuario@email.com)
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return emailRegex.test(email);
     };

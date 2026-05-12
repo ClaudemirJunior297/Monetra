@@ -15,6 +15,7 @@
  */
 package com.monetra.model;
 
+import javax.persistence.*;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 
@@ -23,6 +24,8 @@ import java.time.LocalDateTime;
  * Descreve este modelo na documentação OpenAPI.
  */
 @Schema(description = "Modelo de Transação Financeira")
+@Entity
+@Table(name = "transactions")
 public class Transaction {
 
     /**
@@ -30,13 +33,15 @@ public class Transaction {
      * Gerado automaticamente pelo serviço ao criar uma nova transação.
      */
     @Schema(description = "ID único da transação", example = "1")
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     /**
      * Descrição textual da transação.
-     * Ex: "Compra no supermercado", "Salário", "Netflix"
      */
     @Schema(description = "Descrição da transação", example = "Compra no supermercado")
+    @Column(nullable = false)
     private String description;
 
     /**
@@ -44,6 +49,7 @@ public class Transaction {
      * Ex: "Alimentação", "Renda", "Entretenimento", "Transporte"
      */
     @Schema(description = "Categoria da transação", example = "Alimentação")
+    @Column(nullable = false)
     private String category;
 
     /**
@@ -51,6 +57,7 @@ public class Transaction {
      * Sempre deve ser um valor positivo (validação no serviço).
      */
     @Schema(description = "Valor da transação", example = "150.50")
+    @Column(nullable = false)
     private Double amount;
 
     /**
@@ -59,6 +66,7 @@ public class Transaction {
      * DESPESA: saída de dinheiro (compras, mensalidades)
      */
     @Schema(description = "Tipo de transação", example = "DESPESA", allowableValues = {"RECEITA", "DESPESA"})
+    @Column(nullable = false)
     private String type;
 
     /**
@@ -66,6 +74,7 @@ public class Transaction {
      * Definida automaticamente ao criar a transação (LocalDateTime.now())
      */
     @Schema(description = "Data e hora da transação")
+    @Column(nullable = false)
     private LocalDateTime date;
 
     // =====================================================
@@ -94,6 +103,13 @@ public class Transaction {
         this.amount = amount;
         this.type = type;
         this.date = LocalDateTime.now();
+    }
+
+    @PrePersist
+    public void prePersist() {
+        if (this.date == null) {
+            this.date = LocalDateTime.now();
+        }
     }
 
     // =====================================================

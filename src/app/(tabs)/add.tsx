@@ -1,112 +1,80 @@
-// FUNÇÃO: Tela para adicionar nova transação (gasto ou receita)
+import { useState } from "react";
+import { Alert, Keyboard, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { router } from "expo-router";
+import { colors, spacing, typography } from "@/styles/theme";
+import { categories, Category, TransactionType } from "@/types/transaction";
+import { useTransactions } from "@/contexts/TransactionContext";
 
-// Importações 
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, Alert, ScrollView } from "react-native";
-import { useState } from "react"; // Para criar variáveis que mudam na tela
-import { router } from "expo-router"; // Para navegar entre telas
-import { colors, spacing, typography } from "@/styles/theme"; // Cores e estilos
-import { Category, TransactionType } from "@/types/transaction"; // Tipos de dados
-
-// Lista de categorias disponíveis para o usuário escolher
-const categories: Category[] = ["Alimentação", "Transporte", "Moradia", "Lazer", "Outros"];
+const parseAmount = (value: string) => Number(value.replace(/\./g, "").replace(",", "."));
 
 export default function AddTransaction() {
-  // Estados: variáveis que o React monitora e atualiza a tela quando mudam
-  const [description, setDescription] = useState(""); // O que foi comprado
-  const [amount, setAmount] = useState(""); // Valor gasto/recebido
-  const [type, setType] = useState<TransactionType>("expense"); // Se é despesa ou receita
-  const [category, setCategory] = useState<Category>("Outros"); // Categoria da transação
+  const { addTransaction } = useTransactions();
+  const [description, setDescription] = useState("");
+  const [amount, setAmount] = useState("");
+  const [type, setType] = useState<TransactionType>("expense");
+  const [category, setCategory] = useState<Category>("Outros");
+  const [saving, setSaving] = useState(false);
 
-  // Função que salva a transação quando o usuário clica em Salvar
-  const handleSave = () => {
-    // Validações: verifica se os campos estão preenchidos
-    if (!description || !amount) {
-      Alert.alert("Erro", "Preencha todos os campos");
+  const handleSave = async () => {
+    Keyboard.dismiss();
+    const amountNumber = parseAmount(amount);
+
+    if (!description.trim()) {
+      Alert.alert("Erro", "Informe a descrição da transação.");
+      return;
+    }
+    if (Number.isNaN(amountNumber) || amountNumber <= 0) {
+      Alert.alert("Erro", "Informe um valor maior que zero.");
       return;
     }
 
-    // Converte o valor 
-    const amountNumber = parseFloat(amount.replace(",", "."));
-    if (isNaN(amountNumber) || amountNumber <= 0) {
-      Alert.alert("Erro", "Valor inválido");
-      return;
+    try {
+      setSaving(true);
+      await addTransaction({ description: description.trim(), amount: amountNumber, type, category });
+      setDescription("");
+      setAmount("");
+      setType("expense");
+      setCategory("Outros");
+      Alert.alert("Transação registrada", "Os dados foram salvos no banco.", [
+        { text: "OK", onPress: () => router.push("/(tabs)/transaction") },
+      ]);
+    } catch (error) {
+      Alert.alert("Erro", error instanceof Error ? error.message : "Não foi possível salvar a transação.");
+    } finally {
+      setSaving(false);
     }
-
-    // Aqui futuramente vai salvar no banco de dados
-    console.log({ description, amount: amountNumber, type, category });
-    
-    // Avisa que deu certo e volta para a tela anterior
-    Alert.alert("Sucesso", "Transação adicionada!", [
-      { text: "OK", onPress: () => router.back() }
-    ]);
   };
 
   return (
-    // ScrollView: permite rolar a tela se o conteúdo for grande
-    <ScrollView style={styles.container}>
+    <ScrollView style={styles.container} keyboardShouldPersistTaps="handled">
       <View style={styles.form}>
-        
-        {/* CAMPO: Descrição */}
         <Text style={styles.label}>Descrição</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Ex: Supermercado"
-          placeholderTextColor={colors.textSecondary}
-          value={description}
-          onChangeText={setDescription} // Atualiza o estado ao digitar
-        />
+        <TextInput style={styles.input} placeholder="Descrição da transação" placeholderTextColor={colors.textSecondary} value={description} onChangeText={setDescription} />
 
-        {/* CAMPO: Valor */}
         <Text style={styles.label}>Valor</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="0,00"
-          placeholderTextColor={colors.textSecondary}
-          keyboardType="decimal-pad" // Teclado numérico com vírgula
-          value={amount}
-          onChangeText={setAmount}
-        />
+        <TextInput style={styles.input} placeholder="0,00" placeholderTextColor={colors.textSecondary} keyboardType="decimal-pad" value={amount} onChangeText={setAmount} />
 
-        {/* BOTÕES: Tipo (Despesa ou Receita) */}
         <Text style={styles.label}>Tipo</Text>
         <View style={styles.typeRow}>
-          <TouchableOpacity
-            style={[styles.typeButton, type === "expense" && styles.typeButtonActive]}
-            onPress={() => setType("expense")}
-          >
-            <Text style={[styles.typeText, type === "expense" && { color: colors.white }]}>
-              Despesa
-            </Text>
+          <TouchableOpacity style={[styles.typeButton, type === "expense" && styles.expenseActive]} onPress={() => setType("expense")}>
+            <Text style={[styles.typeText, type === "expense" && styles.activeText]}>Despesa</Text>
           </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.typeButton, type === "income" && styles.typeButtonActive]}
-            onPress={() => setType("income")}
-          >
-            <Text style={[styles.typeText, type === "income" && { color: colors.white }]}>
-              Receita
-            </Text>
+          <TouchableOpacity style={[styles.typeButton, type === "income" && styles.incomeActive]} onPress={() => setType("income")}>
+            <Text style={[styles.typeText, type === "income" && styles.activeText]}>Receita</Text>
           </TouchableOpacity>
         </View>
 
-        {/* BOTÕES: Categorias */}
         <Text style={styles.label}>Categoria</Text>
         <View style={styles.categoriesGrid}>
           {categories.map((cat) => (
-            <TouchableOpacity
-              key={cat}
-              style={[styles.categoryButton, category === cat && styles.categoryButtonActive]}
-              onPress={() => setCategory(cat)}
-            >
-              <Text style={[styles.categoryText, category === cat && { color: colors.white }]}>
-                {cat}
-              </Text>
+            <TouchableOpacity key={cat} style={[styles.categoryButton, category === cat && styles.categoryButtonActive]} onPress={() => setCategory(cat)}>
+              <Text style={[styles.categoryText, category === cat && styles.activeText]}>{cat}</Text>
             </TouchableOpacity>
           ))}
         </View>
 
-        {/* BOTÃO: Salvar */}
-        <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-          <Text style={styles.saveButtonText}>Salvar</Text>
+        <TouchableOpacity style={[styles.saveButton, saving && styles.disabledButton]} onPress={handleSave} disabled={saving}>
+          <Text style={styles.saveButtonText}>{saving ? "Salvando..." : "Salvar transação"}</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>
@@ -114,81 +82,21 @@ export default function AddTransaction() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1, // Ocupa a tela toda
-    backgroundColor: colors.background, // Fundo escuro
-  },
-  form: {
-    padding: spacing.lg, // Espaçamento interno
-  },
-  label: {
-    ...typography.body, // Fonte padrão
-    color: colors.white, // Texto branco
-    marginBottom: spacing.xs,
-    marginTop: spacing.md,
-  },
-  input: {
-    backgroundColor: colors.card, // Fundo do campo
-    color: colors.white, // Texto branco
-    padding: spacing.md,
-    borderRadius: 8, // Bordas arredondadas
-    fontSize: 16,
-    borderWidth: 1,
-    borderColor: colors.border, // Borda cinza
-  },
-  typeRow: {
-    flexDirection: "row", // Botões lado a lado
-    gap: spacing.md, // Espaço entre eles
-    marginTop: spacing.xs,
-  },
-  typeButton: {
-    flex: 1, // Ocupa espaço igual
-    padding: spacing.md,
-    backgroundColor: colors.card,
-    borderRadius: 8,
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  typeButtonActive: {
-    backgroundColor: colors.primary, // Fica verde quando selecionado
-    borderColor: colors.primary,
-  },
-  typeText: {
-    color: colors.text,
-    fontWeight: "600",
-  },
-  categoriesGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap", // Quebra linha se não couber
-    gap: spacing.sm,
-    marginTop: spacing.xs,
-  },
-  categoryButton: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    backgroundColor: colors.card,
-    borderRadius: 20, 
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  categoryButtonActive: {
-    backgroundColor: colors.category, // Roxo quando selecionado
-    borderColor: colors.category,
-  },
-  categoryText: {
-    color: colors.text,
-  },
-  saveButton: {
-    backgroundColor: colors.primary, // Botão verde
-    padding: spacing.md,
-    borderRadius: 8,
-    alignItems: "center",
-    marginTop: spacing.xl,
-  },
-  saveButtonText: {
-    color: colors.white,
-    fontSize: 18,
-    fontWeight: "bold",
-  },
+  container: { flex: 1, backgroundColor: colors.background },
+  form: { padding: spacing.lg, paddingBottom: spacing.xxl },
+  label: { ...typography.body, color: colors.white, marginBottom: spacing.xs, marginTop: spacing.md },
+  input: { backgroundColor: colors.card, color: colors.white, padding: spacing.md, borderRadius: 8, fontSize: 16, borderWidth: 1, borderColor: colors.border },
+  typeRow: { flexDirection: "row", gap: spacing.md, marginTop: spacing.xs },
+  typeButton: { flex: 1, padding: spacing.md, backgroundColor: colors.card, borderRadius: 8, alignItems: "center", borderWidth: 1, borderColor: colors.border },
+  expenseActive: { backgroundColor: colors.expense, borderColor: colors.expense },
+  incomeActive: { backgroundColor: colors.success, borderColor: colors.success },
+  typeText: { color: colors.text, fontWeight: "600" },
+  activeText: { color: colors.white },
+  categoriesGrid: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm, marginTop: spacing.xs },
+  categoryButton: { paddingHorizontal: spacing.md, paddingVertical: spacing.sm, backgroundColor: colors.card, borderRadius: 8, borderWidth: 1, borderColor: colors.border },
+  categoryButtonActive: { backgroundColor: colors.category, borderColor: colors.category },
+  categoryText: { color: colors.text },
+  saveButton: { backgroundColor: colors.primary, padding: spacing.md, borderRadius: 8, alignItems: "center", marginTop: spacing.xl },
+  disabledButton: { opacity: 0.65 },
+  saveButtonText: { color: colors.white, fontSize: 18, fontWeight: "bold" },
 });

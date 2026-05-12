@@ -24,9 +24,8 @@ export default function TabLayout() {
         }}
       />
       
-      {/* ABA 2 - Transações */}
       <Tabs.Screen
-        name="transactions"
+        name="transaction"
         options={{
           title: "Transações",
           tabBarIcon: ({ color }) => <Feather name="list" size={24} color={color} />,

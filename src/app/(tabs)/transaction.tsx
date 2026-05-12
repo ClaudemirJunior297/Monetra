@@ -1,112 +1,171 @@
-// FUNÇÃO: Lista todas as transações do usuário (gastos e receitas)
-
-// Importações 
-import { View, Text, StyleSheet, FlatList } from "react-native";
 import { useState } from "react";
+import { ActivityIndicator, Alert, FlatList, Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { useFocusEffect } from "expo-router";
+import { useCallback } from "react";
+import { Feather } from "@expo/vector-icons";
 import { colors, spacing, typography } from "@/styles/theme";
-import { Transaction } from "@/types/transaction";
+import { categories, Category, Transaction, TransactionType } from "@/types/transaction";
+import { useTransactions } from "@/contexts/TransactionContext";
 
-// DADOS DE EXEMPLO - Lista de transações para testar a tela
-// Cada transação tem: id, descrição, valor, tipo, categoria e data
-const mockTransactions: Transaction[] = [
-  { id: "1", description: "Supermercado", amount: 85.40, type: "expense", category: "Alimentação", date: new Date(2026, 4, 5) },
-  { id: "2", description: "Uber", amount: 27.80, type: "expense", category: "Transporte", date: new Date(2026, 4, 4) },
-  { id: "3", description: "Salário", amount: 7450.00, type: "income", category: "Outros", date: new Date(2026, 4, 1) },
-  { id: "4", description: "Netflix", amount: 45.90, type: "expense", category: "Lazer", date: new Date(2026, 3, 28) },
-  { id: "5", description: "Aluguel", amount: 1200.00, type: "expense", category: "Moradia", date: new Date(2026, 4, 1) },
-  { id: "6", description: "Cinema", amount: 35.00, type: "expense", category: "Lazer", date: new Date(2026, 4, 3) },
-];
+const currency = (value: number) => value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+const parseAmount = (value: string) => Number(value.replace(/\./g, "").replace(",", "."));
 
 export default function Transactions() {
-  // Estado para armazenar as transações (futuramente virá do banco)
-  const [transactions] = useState(mockTransactions);
+  const { transactions, loading, error, refresh, updateTransaction, deleteTransaction } = useTransactions();
+  const [editing, setEditing] = useState<Transaction | null>(null);
+  const [description, setDescription] = useState("");
+  const [amount, setAmount] = useState("");
+  const [type, setType] = useState<TransactionType>("expense");
+  const [category, setCategory] = useState<Category>("Outros");
+  const [saving, setSaving] = useState(false);
 
-  // Função que renderiza cada item da lista
-  // O FlatList chama esta função para cada transação
+  useFocusEffect(useCallback(() => {
+    refresh();
+  }, [refresh]));
+
+  const openEdit = (transaction: Transaction) => {
+    setEditing(transaction);
+    setDescription(transaction.description);
+    setAmount(String(transaction.amount).replace(".", ","));
+    setType(transaction.type);
+    setCategory(transaction.category);
+  };
+
+  const closeEdit = () => {
+    setEditing(null);
+    setSaving(false);
+  };
+
+  const handleUpdate = async () => {
+    if (!editing) return;
+    const amountNumber = parseAmount(amount);
+    if (!description.trim() || Number.isNaN(amountNumber) || amountNumber <= 0) {
+      Alert.alert("Erro", "Preencha descrição e valor corretamente.");
+      return;
+    }
+
+    try {
+      setSaving(true);
+      await updateTransaction(editing.id, { description: description.trim(), amount: amountNumber, type, category, date: editing.date });
+      closeEdit();
+    } catch (err) {
+      Alert.alert("Erro", err instanceof Error ? err.message : "Não foi possível atualizar a transação.");
+      setSaving(false);
+    }
+  };
+
+  const confirmDelete = (transaction: Transaction) => {
+    Alert.alert("Excluir transação", "Esta ação remove o registro do banco de dados.", [
+      { text: "Cancelar", style: "cancel" },
+      {
+        text: "Excluir",
+        style: "destructive",
+        onPress: async () => {
+          try {
+            await deleteTransaction(transaction.id);
+          } catch (err) {
+            Alert.alert("Erro", err instanceof Error ? err.message : "Não foi possível excluir a transação.");
+          }
+        },
+      },
+    ]);
+  };
+
   const renderItem = ({ item }: { item: Transaction }) => (
     <View style={styles.transactionItem}>
-      
-      {/* Lado esquerdo: descrição, categoria e data */}
       <View style={styles.transactionInfo}>
         <Text style={styles.transactionDesc}>{item.description}</Text>
-        <View style={styles.transactionMeta}>
-          <Text style={styles.transactionCategory}>{item.category}</Text>
-          <Text style={styles.transactionDate}>
-            {/* Formata a data: dd/mm/aaaa */}
-            {item.date.toLocaleDateString('pt-BR')}
-          </Text>
-        </View>
+        <Text style={styles.transactionMeta}>{item.category} - {item.date.toLocaleDateString("pt-BR")}</Text>
       </View>
-      
-      {/* Lado direito: valor com sinal + ou - */}
-      <Text style={[
-        styles.transactionAmount,
-        // Se for receita, texto verde; se for despesa, texto vermelho
-        { color: item.type === "income" ? colors.success : colors.expense }
-      ]}>
-        {item.type === "income" ? "+ " : "- "}
-        R$ {item.amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+      <Text style={[styles.transactionAmount, { color: item.type === "income" ? colors.success : colors.expense }]}>
+        {item.type === "income" ? "+ " : "- "}{currency(item.amount)}
       </Text>
+      <View style={styles.actions}>
+        <TouchableOpacity style={styles.iconButton} onPress={() => openEdit(item)}>
+          <Feather name="edit-2" size={18} color={colors.text} />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.iconButton} onPress={() => confirmDelete(item)}>
+          <Feather name="trash-2" size={18} color={colors.expense} />
+        </TouchableOpacity>
+      </View>
     </View>
   );
 
   return (
     <View style={styles.container}>
-      {/* FlatList: componente otimizado para listas grandes */}
-      <FlatList
-        data={transactions}           // Dados da lista
-        keyExtractor={(item) => item.id} // Identificador único de cada item
-        renderItem={renderItem}       // Função que desenha cada item
-        contentContainerStyle={styles.list} // Estilo do container
-        showsVerticalScrollIndicator={false} // Esconde barra de rolagem
-      />
+      {error ? <Text style={styles.error}>{error}</Text> : null}
+      {loading && transactions.length === 0 ? (
+        <View style={styles.stateBox}><ActivityIndicator color={colors.primary} /></View>
+      ) : (
+        <FlatList
+          data={transactions}
+          keyExtractor={(item) => item.id}
+          renderItem={renderItem}
+          contentContainerStyle={transactions.length ? styles.list : styles.emptyList}
+          onRefresh={refresh}
+          refreshing={loading}
+          ListEmptyComponent={<Text style={styles.emptyText}>Nenhuma transação cadastrada.</Text>}
+        />
+      )}
+
+      <Modal visible={!!editing} transparent animationType="fade" onRequestClose={closeEdit}>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Editar transação</Text>
+            <TextInput style={styles.input} value={description} onChangeText={setDescription} placeholder="Descrição" placeholderTextColor={colors.textSecondary} />
+            <TextInput style={styles.input} value={amount} onChangeText={setAmount} keyboardType="decimal-pad" placeholder="Valor" placeholderTextColor={colors.textSecondary} />
+            <View style={styles.typeRow}>
+              <TouchableOpacity style={[styles.typeButton, type === "expense" && styles.expenseActive]} onPress={() => setType("expense")}><Text style={styles.typeText}>Despesa</Text></TouchableOpacity>
+              <TouchableOpacity style={[styles.typeButton, type === "income" && styles.incomeActive]} onPress={() => setType("income")}><Text style={styles.typeText}>Receita</Text></TouchableOpacity>
+            </View>
+            <View style={styles.categoriesGrid}>
+              {categories.map((cat) => (
+                <TouchableOpacity key={cat} style={[styles.categoryButton, category === cat && styles.categoryButtonActive]} onPress={() => setCategory(cat)}>
+                  <Text style={styles.categoryText}>{cat}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+            <View style={styles.modalActions}>
+              <TouchableOpacity style={styles.cancelButton} onPress={closeEdit}><Text style={styles.cancelText}>Cancelar</Text></TouchableOpacity>
+              <TouchableOpacity style={styles.saveButton} onPress={handleUpdate} disabled={saving}><Text style={styles.saveText}>{saving ? "Salvando..." : "Salvar"}</Text></TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1, // Ocupa a tela toda
-    backgroundColor: colors.background, // Fundo escuro
-  },
-  list: {
-    padding: spacing.md, // Espaçamento interno
-  },
-  transactionItem: {
-    flexDirection: "row", // Descrição e valor lado a lado
-    justifyContent: "space-between", // Espaço entre os dois lados
-    alignItems: "center", // Centraliza verticalmente
-    backgroundColor: colors.card, // Fundo do card
-    padding: spacing.md,
-    borderRadius: 8, // Bordas arredondadas
-    marginBottom: spacing.sm, // Espaço entre os itens
-    borderWidth: 1, // Borda
-    borderColor: colors.border,
-  },
-  transactionInfo: {
-    flex: 1, // Ocupa o espaço disponível
-  },
-  transactionDesc: {
-    ...typography.body,
-    color: colors.white, // Descrição em branco
-    fontWeight: "600", // Negrito
-    marginBottom: 4, // Espaço abaixo da descrição
-  },
-  transactionMeta: {
-    flexDirection: "row", // Categoria e data lado a lado
-    gap: 12, // Espaço entre eles
-  },
-  transactionCategory: {
-    ...typography.caption, // Fonte pequena
-    color: colors.textSecondary,
-  },
-  transactionDate: {
-    ...typography.caption,
-    color: colors.textSecondary,
-  },
-  transactionAmount: {
-    ...typography.subtitle,
-    fontSize: 16,
-    fontWeight: "600",
-  },
+  container: { flex: 1, backgroundColor: colors.background },
+  list: { padding: spacing.md },
+  emptyList: { flex: 1, alignItems: "center", justifyContent: "center", padding: spacing.xl },
+  error: { color: colors.alert, padding: spacing.md },
+  emptyText: { ...typography.body, color: colors.textSecondary, textAlign: "center" },
+  stateBox: { flex: 1, alignItems: "center", justifyContent: "center" },
+  transactionItem: { flexDirection: "row", alignItems: "center", backgroundColor: colors.card, padding: spacing.md, borderRadius: 8, marginBottom: spacing.sm, borderWidth: 1, borderColor: colors.border, gap: spacing.sm },
+  transactionInfo: { flex: 1, minWidth: 0 },
+  transactionDesc: { ...typography.body, color: colors.white, fontWeight: "600", marginBottom: 4 },
+  transactionMeta: { ...typography.caption, color: colors.textSecondary },
+  transactionAmount: { ...typography.subtitle, fontSize: 15, fontWeight: "600" },
+  actions: { flexDirection: "row", gap: spacing.xs },
+  iconButton: { width: 34, height: 34, alignItems: "center", justifyContent: "center", borderRadius: 8, backgroundColor: colors.background },
+  modalOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.72)", alignItems: "center", justifyContent: "center", padding: spacing.lg },
+  modalContent: { width: "100%", maxWidth: 520, backgroundColor: colors.card, borderRadius: 8, padding: spacing.lg, borderWidth: 1, borderColor: colors.border, gap: spacing.md },
+  modalTitle: { ...typography.subtitle, color: colors.white },
+  input: { backgroundColor: colors.background, color: colors.white, padding: spacing.md, borderRadius: 8, borderWidth: 1, borderColor: colors.border },
+  typeRow: { flexDirection: "row", gap: spacing.md },
+  typeButton: { flex: 1, padding: spacing.md, borderRadius: 8, alignItems: "center", backgroundColor: colors.background, borderWidth: 1, borderColor: colors.border },
+  expenseActive: { backgroundColor: colors.expense, borderColor: colors.expense },
+  incomeActive: { backgroundColor: colors.success, borderColor: colors.success },
+  typeText: { color: colors.white, fontWeight: "700" },
+  categoriesGrid: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
+  categoryButton: { paddingHorizontal: spacing.md, paddingVertical: spacing.sm, borderRadius: 8, backgroundColor: colors.background, borderWidth: 1, borderColor: colors.border },
+  categoryButtonActive: { backgroundColor: colors.category, borderColor: colors.category },
+  categoryText: { color: colors.white },
+  modalActions: { flexDirection: "row", justifyContent: "flex-end", gap: spacing.md },
+  cancelButton: { padding: spacing.md },
+  cancelText: { color: colors.textSecondary, fontWeight: "700" },
+  saveButton: { backgroundColor: colors.primary, paddingHorizontal: spacing.lg, paddingVertical: spacing.md, borderRadius: 8 },
+  saveText: { color: colors.white, fontWeight: "700" },
 });
