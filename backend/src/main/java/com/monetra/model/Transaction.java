@@ -1,33 +1,93 @@
+/**
+ * Transaction
+ * 
+ * Modelo de domínio que representa uma transação financeira no sistema.
+ * Cada transação pode ser uma receita ou despesa, com descrição, categoria, valor e data.
+ * 
+ * Características:
+ * - Suporta dois tipos: RECEITA e DESPESA
+ * - Armazena informações de categorização e descrição
+ * - Registra automaticamente a data/hora da transação
+ * - Validações básicas no construtor
+ * 
+ * @author Monetra Team
+ * @version 1.0.0
+ */
 package com.monetra.model;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 
+/**
+ * Anotação Swagger para documentação automática da API.
+ * Descreve este modelo na documentação OpenAPI.
+ */
 @Schema(description = "Modelo de Transação Financeira")
 public class Transaction {
 
+    /**
+     * ID único da transação.
+     * Gerado automaticamente pelo serviço ao criar uma nova transação.
+     */
     @Schema(description = "ID único da transação", example = "1")
     private Long id;
 
+    /**
+     * Descrição textual da transação.
+     * Ex: "Compra no supermercado", "Salário", "Netflix"
+     */
     @Schema(description = "Descrição da transação", example = "Compra no supermercado")
     private String description;
 
+    /**
+     * Categoria de classificação da transação.
+     * Ex: "Alimentação", "Renda", "Entretenimento", "Transporte"
+     */
     @Schema(description = "Categoria da transação", example = "Alimentação")
     private String category;
 
+    /**
+     * Valor monetário da transação.
+     * Sempre deve ser um valor positivo (validação no serviço).
+     */
     @Schema(description = "Valor da transação", example = "150.50")
     private Double amount;
 
+    /**
+     * Tipo da transação: RECEITA ou DESPESA.
+     * RECEITA: entrada de dinheiro (salário, bônus)
+     * DESPESA: saída de dinheiro (compras, mensalidades)
+     */
     @Schema(description = "Tipo de transação", example = "DESPESA", allowableValues = {"RECEITA", "DESPESA"})
-    private String type; // RECEITA ou DESPESA
+    private String type;
 
+    /**
+     * Data e hora do registro da transação.
+     * Definida automaticamente ao criar a transação (LocalDateTime.now())
+     */
     @Schema(description = "Data e hora da transação")
     private LocalDateTime date;
 
-    // Construtores
+    // =====================================================
+    // CONSTRUTORES
+    // =====================================================
+
+    /**
+     * Construtor padrão sem argumentos.
+     * Utilizado pelo Spring Framework para desserializar JSON.
+     */
     public Transaction() {
     }
 
+    /**
+     * Construtor com todos os campos obrigatórios.
+     * Define automaticamente a data/hora atual.
+     * 
+     * @param description Descrição da transação
+     * @param category Categoria da transação
+     * @param amount Valor da transação
+     * @param type Tipo (RECEITA ou DESPESA)
+     */
     public Transaction(String description, String category, Double amount, String type) {
         this.description = description;
         this.category = category;
@@ -36,7 +96,14 @@ public class Transaction {
         this.date = LocalDateTime.now();
     }
 
-    // Getters e Setters
+    // =====================================================
+    // GETTERS E SETTERS
+    // =====================================================
+
+    /**
+     * Obtém o ID da transação.
+     * @return ID único da transação
+     */
     public Long getId() {
         return id;
     }
