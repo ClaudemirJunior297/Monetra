@@ -18,6 +18,7 @@ export default function Login() {
     // Função que valida se o e-mail tem formato correto
     const validateEmail = (email: string) => {
         // Regex que verifica: algo@algo.algo
+        // Explicação: ^[^\s@]+ (início sem espaços ou @) + @ + [^\s@]+ (domínio sem espaços ou @) + \. + [^\s@]+$ (extensão sem espaços ou @)
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return emailRegex.test(email);
     };
@@ -47,7 +48,7 @@ export default function Login() {
         
         // Tenta fazer o login chamando a função do contexto
         try {
-            await signIn(email, senha); // Se der certo, vai para a tela principal
+            await signIn(email, senha); // Se der certo, vai para a tela principal (automaticamente pelo contexto)
         } catch (error) {
             Alert.alert("Erro", "Falha ao fazer login. Tente novamente.");
         }
@@ -58,6 +59,7 @@ export default function Login() {
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
             
             {/* KeyboardAvoidingView: evita que o teclado cubra os campos */}
+            {/* behavior ajusta o comportamento: "padding" no iOS, "height" no Android */}
             <KeyboardAvoidingView 
                 style={{ flex: 1 }} 
                 behavior={Platform.select({ ios: "padding", android: "height" })}
@@ -87,14 +89,14 @@ export default function Login() {
                             {/* Campo de Senha */}
                             <Input 
                                 placeholder="Senha" 
-                                secureTextEntry // Esconde os caracteres digitados
+                                secureTextEntry // Esconde os caracteres digitados (mostra •••)
                                 value={senha}
                                 onChangeText={setSenha}
                             />
 
                             {/* BOTÃO DE ENTRAR */}
                             <Button 
-                                label={loading ? "Entrando..." : "Entrar"} 
+                                label={loading ? "Entrando..." : "Entrar"} // Muda texto enquanto carrega
                                 onPress={handleLogin}
                                 disabled={loading} // Desabilita enquanto carrega
                             />
@@ -114,9 +116,10 @@ export default function Login() {
     )
 }
 
+// ========== ESTILOS DA TELA ==========
 const styles = StyleSheet.create({
     scrollContainer: {
-        flexGrow: 1, // ScrollView ocupa a tela toda
+        flexGrow: 1, // ScrollView ocupa a tela toda (permite rolagem mesmo com conteúdo pequeno)
     },
     container: {
         flex: 1, // Ocupa a tela toda
@@ -127,12 +130,12 @@ const styles = StyleSheet.create({
     illustration: {
         width: "100%",
         height: 200,
-        resizeMode: "contain", // Mantém a proporção da imagem
+        resizeMode: "contain", // Mantém a proporção da imagem sem cortar
         marginBottom: spacing.lg, // Espaço abaixo de 24px
     },
     title: {
         fontSize: 40, // Título grande
-        fontWeight: "900", // Negrito máximo
+        fontWeight: "900", // Negrito máximo (Black)
         color: colors.primary, // Verde (#00C853)
         textAlign: "center", // Centralizado
         marginBottom: spacing.sm, // Espaço abaixo de 8px
@@ -144,7 +147,7 @@ const styles = StyleSheet.create({
         marginBottom: spacing.xl, // Espaço abaixo de 32px
     },
     form: {
-        gap: spacing.md, // Espaço entre os campos de 16px
+        gap: spacing.md, // Espaço entre os campos de 16px (funciona como margin bottom)
     },
     footerText: {
         textAlign: "center",
@@ -153,6 +156,6 @@ const styles = StyleSheet.create({
     },
     footerLink: {
         color: colors.primary, // Link em verde
-        fontWeight: "700", // Negrito
+        fontWeight: "700", // Negrito (Bold)
     },
 })
