@@ -1,110 +1,142 @@
-// FUNÇÃO: Tela de login do aplicativo
+// Função: Tela de login do aplicativo
 
-// Importações 
-import { useState } from "react"; // Para criar variáveis que mudam na tela
+// Importações
+import { useState } from "react";
 import { Image, StyleSheet, View, Text, ScrollView, KeyboardAvoidingView, Platform, Alert, TouchableWithoutFeedback, Keyboard } from "react-native";
-import { Link } from "expo-router"; // Para navegação entre telas
-import { Input } from "@/components/Input"; // Componente de campo de texto
-import { Button } from "@/components/Button"; // Componente de botão
-import { useAuth } from "@/contexts/AuthContext"; // Hook de autenticação
-import { colors, spacing, typography } from "@/styles/theme"; // Cores e estilos
 
+// Navegação entre telas
+import { Link } from "expo-router";
+
+// Componentes personalizados
+import { Input } from "@/components/Input";
+import { Button } from "@/components/Button";
+
+// Contexto de autenticação
+import { useAuth } from "@/contexts/AuthContext";
+
+// Cores e estilos do projeto
+import { colors, spacing, typography } from "@/styles/theme";
+
+// Função principal da tela de login
 export default function Login() {
-    // Estados: variáveis que o React monitora
-    const [email, setEmail] = useState(""); // Armazena o e-mail digitado
-    const [senha, setSenha] = useState(""); // Armazena a senha digitada
-    const { signIn, loading } = useAuth(); // Pega a função de login e o estado de carregamento
 
-    // Função que valida se o e-mail tem formato correto
+    // Estado do e-mail
+    const [email, setEmail] = useState("");
+
+    // Estado da senha
+    const [senha, setSenha] = useState("");
+
+    // Função de login e loading
+    const { signIn, loading } = useAuth();
+
+    // Função: Validar e-mail
     const validateEmail = (email: string) => {
-        // Regex que verifica: algo@algo.algo
-        // Explicação: ^[^\s@]+ (início sem espaços ou @) + @ + [^\s@]+ (domínio sem espaços ou @) + \. + [^\s@]+$ (extensão sem espaços ou @)
+
+        // Regex para validar formato do e-mail
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
         return emailRegex.test(email);
     };
 
-    // Função executada quando o usuário clica em Entrar
+    // Função: Fazer login
     const handleLogin = async () => {
-        // Fecha o teclado automaticamente
+
+        // Fecha o teclado
         Keyboard.dismiss();
-        
-        // VALIDAÇÃO 1: campos vazios
+
+        // Verifica campos vazios
         if (!email.trim() || !senha) {
             Alert.alert("Erro", "Por favor, preencha todos os campos");
             return;
         }
-        
-        // VALIDAÇÃO 2: e-mail inválido
+
+        // Verifica se o e-mail é válido
         if (!validateEmail(email)) {
             Alert.alert("Erro", "Por favor, insira um e-mail válido");
             return;
         }
-        
-        // VALIDAÇÃO 3: senha muito curta
+
+        // Verifica tamanho mínimo da senha
         if (senha.length < 6) {
             Alert.alert("Erro", "A senha deve ter pelo menos 6 caracteres");
             return;
         }
-        
-        // Tenta fazer o login chamando a função do contexto
+
         try {
-            await signIn(email, senha); // Se der certo, vai para a tela principal (automaticamente pelo contexto)
+
+            // Faz login
+            await signIn(email, senha);
+
         } catch (error) {
+
+            // Exibe erro
             Alert.alert("Erro", "Falha ao fazer login. Tente novamente.");
         }
     };
 
     return (
-        // TouchableWithoutFeedback: tocar em qualquer lugar fecha o teclado
+
+        // Fecha teclado ao tocar fora
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-            
-            {/* KeyboardAvoidingView: evita que o teclado cubra os campos */}
-            {/* behavior ajusta o comportamento: "padding" no iOS, "height" no Android */}
-            <KeyboardAvoidingView 
-                style={{ flex: 1 }} 
+
+            {/* Evita teclado cobrir os inputs */}
+            <KeyboardAvoidingView
+                style={{ flex: 1 }}
                 behavior={Platform.select({ ios: "padding", android: "height" })}
             >
-                {/* ScrollView: permite rolar se o conteúdo for grande */}
+
+                {/* Permite rolagem da tela */}
                 <ScrollView contentContainerStyle={styles.scrollContainer}>
+
+                    {/* Container principal */}
                     <View style={styles.container}>
-                        
-                        {/* LOGO */}
-                        <Image source={require("@/assets/logo.png")} style={styles.illustration} />
 
-                        {/* TÍTULO */}
+                        {/* Logo do app */}
+                        <Image
+                            source={require("@/assets/logo.png")}
+                            style={styles.illustration}
+                        />
+
+                        {/* Título */}
                         <Text style={styles.title}>Monetra</Text>
-                        <Text style={styles.subtitle}>Gerencie suas finanças de forma inteligente</Text>
 
-                        {/* FORMULÁRIO */}
+                        {/* Subtítulo */}
+                        <Text style={styles.subtitle}>
+                            Gerencie suas finanças de forma inteligente
+                        </Text>
+
+                        {/* Formulário */}
                         <View style={styles.form}>
-                            {/* Campo de E-mail */}
-                            <Input 
-                                placeholder="E-mail" 
-                                keyboardType="email-address" // Teclado com @ e .
+
+                            {/* Campo de e-mail */}
+                            <Input
+                                placeholder="E-mail"
+                                keyboardType="email-address"
                                 value={email}
                                 onChangeText={setEmail}
-                                autoCapitalize="none" // Não capitaliza automaticamente
+                                autoCapitalize="none"
                             />
-                            
-                            {/* Campo de Senha */}
-                            <Input 
-                                placeholder="Senha" 
-                                secureTextEntry // Esconde os caracteres digitados (mostra •••)
+
+                            {/* Campo de senha */}
+                            <Input
+                                placeholder="Senha"
+                                secureTextEntry
                                 value={senha}
                                 onChangeText={setSenha}
                             />
 
-                            {/* BOTÃO DE ENTRAR */}
-                            <Button 
-                                label={loading ? "Entrando..." : "Entrar"} // Muda texto enquanto carrega
+                            {/* Botão de login */}
+                            <Button
+                                label={loading ? "Entrando..." : "Entrar"}
                                 onPress={handleLogin}
-                                disabled={loading} // Desabilita enquanto carrega
+                                disabled={loading}
                             />
                         </View>
-                        
-                        {/* LINK PARA CADASTRO */}
+
+                        {/* Link para cadastro */}
                         <Text style={styles.footerText}>
-                            Não tem uma conta? {" "}
+                            Não tem uma conta?{" "}
+
                             <Link href="/signup" style={styles.footerLink}>
                                 Cadastre-se aqui.
                             </Link>
@@ -116,46 +148,62 @@ export default function Login() {
     )
 }
 
-// ========== ESTILOS DA TELA ==========
+// Estilos da tela
 const styles = StyleSheet.create({
+
+    // ScrollView
     scrollContainer: {
-        flexGrow: 1, // ScrollView ocupa a tela toda (permite rolagem mesmo com conteúdo pequeno)
+        flexGrow: 1,
     },
+
+    // Container principal
     container: {
-        flex: 1, // Ocupa a tela toda
-        backgroundColor: colors.background, // Fundo escuro (#121212)
-        padding: spacing.xl, // Espaçamento interno de 32px
-        justifyContent: "center", // Centraliza o conteúdo verticalmente
+        flex: 1,
+        backgroundColor: colors.background,
+        padding: spacing.xl,
+        justifyContent: "center",
     },
+
+    // Logo
     illustration: {
         width: "100%",
         height: 200,
-        resizeMode: "contain", // Mantém a proporção da imagem sem cortar
-        marginBottom: spacing.lg, // Espaço abaixo de 24px
+        resizeMode: "contain",
+        marginBottom: spacing.lg,
     },
+
+    // Título
     title: {
-        fontSize: 40, // Título grande
-        fontWeight: "900", // Negrito máximo (Black)
-        color: colors.primary, // Verde (#00C853)
-        textAlign: "center", // Centralizado
-        marginBottom: spacing.sm, // Espaço abaixo de 8px
+        fontSize: 40,
+        fontWeight: "900",
+        color: colors.primary,
+        textAlign: "center",
+        marginBottom: spacing.sm,
     },
+
+    // Subtítulo
     subtitle: {
         fontSize: 16,
-        color: colors.textSecondary, // Cinza claro (#9E9E9E)
+        color: colors.textSecondary,
         textAlign: "center",
-        marginBottom: spacing.xl, // Espaço abaixo de 32px
+        marginBottom: spacing.xl,
     },
+
+    // Formulário
     form: {
-        gap: spacing.md, // Espaço entre os campos de 16px (funciona como margin bottom)
+        gap: spacing.md,
     },
+
+    // Texto inferior
     footerText: {
         textAlign: "center",
-        marginTop: spacing.lg, // Espaço acima de 24px
-        color: colors.textSecondary, // Cinza claro
+        marginTop: spacing.lg,
+        color: colors.textSecondary,
     },
+
+    // Link de cadastro
     footerLink: {
-        color: colors.primary, // Link em verde
-        fontWeight: "700", // Negrito (Bold)
+        color: colors.primary,
+        fontWeight: "700",
     },
 })

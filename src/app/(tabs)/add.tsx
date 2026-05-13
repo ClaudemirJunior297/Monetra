@@ -1,131 +1,358 @@
-// Importação dos hooks e componentes necessários do React e React Native
+// Função: Adicionar uma nova transação
+
+// Importa os hooks e componentes
 import { useState } from "react";
 import { Alert, Keyboard, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
-// Hook de navegação do Expo Router
+
+// Importa a navegação
 import { router } from "expo-router";
-// Tokens de design (cores, espaçamentos, tipografia)
+
+// Importa cores e estilos
 import { colors, spacing, typography } from "@/styles/theme";
-// Tipos e dados estáticos de categorias e tipo de transação
+
+// Importa categorias e tipos
 import { categories, Category, TransactionType } from "@/types/transaction";
-// Hook customizado para acessar o contexto de transações
+
+// Importa o contexto das transações
 import { useTransactions } from "@/contexts/TransactionContext";
 
-// Função auxiliar para converter string de moeda para número
-// Exemplo: "1.234,56" -> 1234.56
-const parseAmount = (value: string) => Number(value.replace(/\./g, "").replace(",", "."));
+// Função: Converter valor string para número
+const parseAmount = (value: string) =>
+  Number(value.replace(/\./g, "").replace(",", "."));
 
-// Componente principal da tela de adicionar transação
+// Função principal da tela
 export default function AddTransaction() {
-  // Obtém a função addTransaction do contexto
-  const { addTransaction } = useTransactions();
-  
-  // Estados do formulário
-  const [description, setDescription] = useState("");      // Descrição da transação
-  const [amount, setAmount] = useState("");                // Valor como string (formato BR)
-  const [type, setType] = useState<TransactionType>("expense"); // Tipo: despesa ou receita
-  const [category, setCategory] = useState<Category>("Outros"); // Categoria selecionada
-  const [saving, setSaving] = useState(false);             // Estado de carregamento do salvamento
 
-  // Função que salva a transação
+  // Pega a função de adicionar transação
+  const { addTransaction } = useTransactions();
+
+  // Estado da descrição
+  const [description, setDescription] = useState("");
+
+  // Estado do valor
+  const [amount, setAmount] = useState("");
+
+  // Estado do tipo da transação
+  const [type, setType] = useState<TransactionType>("expense");
+
+  // Estado da categoria
+  const [category, setCategory] = useState<Category>("Outros");
+
+  // Estado de carregamento
+  const [saving, setSaving] = useState(false);
+
+  // Função: Salvar transação
   const handleSave = async () => {
-    // Fecha o teclado virtual
+
+    // Fecha o teclado
     Keyboard.dismiss();
-    // Converte o valor da string para número
+
+    // Converte o valor para número
     const amountNumber = parseAmount(amount);
 
-    // Validação: descrição não pode estar vazia
+    // Verifica se a descrição está vazia
     if (!description.trim()) {
       Alert.alert("Erro", "Informe a descrição da transação.");
       return;
     }
-    // Validação: valor deve ser numérico e maior que zero
+
+    // Verifica se o valor é válido
     if (Number.isNaN(amountNumber) || amountNumber <= 0) {
       Alert.alert("Erro", "Informe um valor maior que zero.");
       return;
     }
 
     try {
-      setSaving(true); // Inicia estado de carregamento
-      // Chama a função do contexto para adicionar a transação
-      await addTransaction({ description: description.trim(), amount: amountNumber, type, category });
-      
-      // Reseta os campos do formulário após salvar com sucesso
+
+      // Ativa loading
+      setSaving(true);
+
+      // Salva a transação
+      await addTransaction({
+        description: description.trim(),
+        amount: amountNumber,
+        type,
+        category
+      });
+
+      // Limpa os campos
       setDescription("");
       setAmount("");
       setType("expense");
       setCategory("Outros");
-      
-      // Alerta de sucesso e navega para a lista de transações
-      Alert.alert("Transação registrada", "Os dados foram salvos no banco.", [
-        { text: "OK", onPress: () => router.push("/(tabs)/transaction") },
-      ]);
+
+      // Mostra alerta de sucesso
+      Alert.alert(
+        "Transação registrada",
+        "Os dados foram salvos no banco.",
+        [
+          {
+            text: "OK",
+            onPress: () => router.push("/(tabs)/transaction")
+          },
+        ]
+      );
+
     } catch (error) {
-      // Em caso de erro, exibe mensagem adequada
-      Alert.alert("Erro", error instanceof Error ? error.message : "Não foi possível salvar a transação.");
+
+      // Mostra erro
+      Alert.alert(
+        "Erro",
+        error instanceof Error
+          ? error.message
+          : "Não foi possível salvar a transação."
+      );
+
     } finally {
-      setSaving(false); // Finaliza estado de carregamento
+
+      // Desativa loading
+      setSaving(false);
     }
   };
 
   return (
-    // ScrollView permite rolagem em telas pequenas
-    <ScrollView style={styles.container} keyboardShouldPersistTaps="handled">
+
+    // Tela com rolagem
+    <ScrollView
+      style={styles.container}
+      keyboardShouldPersistTaps="handled"
+    >
+
       <View style={styles.form}>
-        {/* Campo Descrição */}
+
+        {/* Campo descrição */}
         <Text style={styles.label}>Descrição</Text>
-        <TextInput style={styles.input} placeholder="Descrição da transação" placeholderTextColor={colors.textSecondary} value={description} onChangeText={setDescription} />
 
-        {/* Campo Valor */}
+        <TextInput
+          style={styles.input}
+          placeholder="Descrição da transação"
+          placeholderTextColor={colors.textSecondary}
+          value={description}
+          onChangeText={setDescription}
+        />
+
+        {/* Campo valor */}
         <Text style={styles.label}>Valor</Text>
-        <TextInput style={styles.input} placeholder="0,00" placeholderTextColor={colors.textSecondary} keyboardType="decimal-pad" value={amount} onChangeText={setAmount} />
 
-        {/* Seletor de Tipo (Despesa / Receita) */}
+        <TextInput
+          style={styles.input}
+          placeholder="0,00"
+          placeholderTextColor={colors.textSecondary}
+          keyboardType="decimal-pad"
+          value={amount}
+          onChangeText={setAmount}
+        />
+
+        {/* Tipo da transação */}
         <Text style={styles.label}>Tipo</Text>
+
         <View style={styles.typeRow}>
-          <TouchableOpacity style={[styles.typeButton, type === "expense" && styles.expenseActive]} onPress={() => setType("expense")}>
-            <Text style={[styles.typeText, type === "expense" && styles.activeText]}>Despesa</Text>
+
+          {/* Botão despesa */}
+          <TouchableOpacity
+            style={[
+              styles.typeButton,
+              type === "expense" && styles.expenseActive
+            ]}
+            onPress={() => setType("expense")}
+          >
+            <Text
+              style={[
+                styles.typeText,
+                type === "expense" && styles.activeText
+              ]}
+            >
+              Despesa
+            </Text>
           </TouchableOpacity>
-          <TouchableOpacity style={[styles.typeButton, type === "income" && styles.incomeActive]} onPress={() => setType("income")}>
-            <Text style={[styles.typeText, type === "income" && styles.activeText]}>Receita</Text>
+
+          {/* Botão receita */}
+          <TouchableOpacity
+            style={[
+              styles.typeButton,
+              type === "income" && styles.incomeActive
+            ]}
+            onPress={() => setType("income")}
+          >
+            <Text
+              style={[
+                styles.typeText,
+                type === "income" && styles.activeText
+              ]}
+            >
+              Receita
+            </Text>
           </TouchableOpacity>
         </View>
 
-        {/* Grade de Categorias (lista fixa importada de types/transaction) */}
+        {/* Lista de categorias */}
         <Text style={styles.label}>Categoria</Text>
+
         <View style={styles.categoriesGrid}>
+
           {categories.map((cat) => (
-            <TouchableOpacity key={cat} style={[styles.categoryButton, category === cat && styles.categoryButtonActive]} onPress={() => setCategory(cat)}>
-              <Text style={[styles.categoryText, category === cat && styles.activeText]}>{cat}</Text>
+
+            <TouchableOpacity
+              key={cat}
+              style={[
+                styles.categoryButton,
+                category === cat && styles.categoryButtonActive
+              ]}
+              onPress={() => setCategory(cat)}
+            >
+              <Text
+                style={[
+                  styles.categoryText,
+                  category === cat && styles.activeText
+                ]}
+              >
+                {cat}
+              </Text>
             </TouchableOpacity>
           ))}
         </View>
 
-        {/* Botão de Salvar (desabilitado durante o salvamento) */}
-        <TouchableOpacity style={[styles.saveButton, saving && styles.disabledButton]} onPress={handleSave} disabled={saving}>
-          <Text style={styles.saveButtonText}>{saving ? "Salvando..." : "Salvar transação"}</Text>
+        {/* Botão salvar */}
+        <TouchableOpacity
+          style={[
+            styles.saveButton,
+            saving && styles.disabledButton
+          ]}
+          onPress={handleSave}
+          disabled={saving}
+        >
+          <Text style={styles.saveButtonText}>
+            {saving ? "Salvando..." : "Salvar transação"}
+          </Text>
         </TouchableOpacity>
+
       </View>
     </ScrollView>
   );
 }
 
-// Estilos do componente (definidos com StyleSheet)
+// Estilos da tela
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },                           // Fundo principal
-  form: { padding: spacing.lg, paddingBottom: spacing.xxl },                           // Espaçamento interno do formulário
-  label: { ...typography.body, color: colors.white, marginBottom: spacing.xs, marginTop: spacing.md }, // Estilo dos rótulos
-  input: { backgroundColor: colors.card, color: colors.white, padding: spacing.md, borderRadius: 8, fontSize: 16, borderWidth: 1, borderColor: colors.border }, // Campo de texto
-  typeRow: { flexDirection: "row", gap: spacing.md, marginTop: spacing.xs },           // Container dos botões de tipo (lado a lado)
-  typeButton: { flex: 1, padding: spacing.md, backgroundColor: colors.card, borderRadius: 8, alignItems: "center", borderWidth: 1, borderColor: colors.border }, // Botão de tipo padrão
-  expenseActive: { backgroundColor: colors.expense, borderColor: colors.expense },     // Botão "Despesa" ativo (fundo vermelho)
-  incomeActive: { backgroundColor: colors.success, borderColor: colors.success },      // Botão "Receita" ativo (fundo verde)
-  typeText: { color: colors.text, fontWeight: "600" },                                 // Texto do botão de tipo
-  activeText: { color: colors.white },                                                 // Texto quando o botão está ativo
-  categoriesGrid: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm, marginTop: spacing.xs }, // Grade flexível de categorias
-  categoryButton: { paddingHorizontal: spacing.md, paddingVertical: spacing.sm, backgroundColor: colors.card, borderRadius: 8, borderWidth: 1, borderColor: colors.border }, // Botão de categoria
-  categoryButtonActive: { backgroundColor: colors.category, borderColor: colors.category }, // Categoria selecionada
-  categoryText: { color: colors.text },                                               // Texto da categoria
-  saveButton: { backgroundColor: colors.primary, padding: spacing.md, borderRadius: 8, alignItems: "center", marginTop: spacing.xl }, // Botão salvar
-  disabledButton: { opacity: 0.65 },                                                  // Botão desabilitado (semitransparente)
-  saveButtonText: { color: colors.white, fontSize: 18, fontWeight: "bold" },          // Texto do botão salvar
+
+  // Container principal
+  container: {
+    flex: 1,
+    backgroundColor: colors.background
+  },
+
+  // Área do formulário
+  form: {
+    padding: spacing.lg,
+    paddingBottom: spacing.xxl
+  },
+
+  // Texto dos labels
+  label: {
+    ...typography.body,
+    color: colors.white,
+    marginBottom: spacing.xs,
+    marginTop: spacing.md
+  },
+
+  // Campo input
+  input: {
+    backgroundColor: colors.card,
+    color: colors.white,
+    padding: spacing.md,
+    borderRadius: 8,
+    fontSize: 16,
+    borderWidth: 1,
+    borderColor: colors.border
+  },
+
+  // Linha dos botões
+  typeRow: {
+    flexDirection: "row",
+    gap: spacing.md,
+    marginTop: spacing.xs
+  },
+
+  // Botão de tipo
+  typeButton: {
+    flex: 1,
+    padding: spacing.md,
+    backgroundColor: colors.card,
+    borderRadius: 8,
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: colors.border
+  },
+
+  // Botão despesa ativo
+  expenseActive: {
+    backgroundColor: colors.expense,
+    borderColor: colors.expense
+  },
+
+  // Botão receita ativo
+  incomeActive: {
+    backgroundColor: colors.success,
+    borderColor: colors.success
+  },
+
+  // Texto do botão
+  typeText: {
+    color: colors.text,
+    fontWeight: "600"
+  },
+
+  // Texto ativo
+  activeText: {
+    color: colors.white
+  },
+
+  // Área das categorias
+  categoriesGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: spacing.sm,
+    marginTop: spacing.xs
+  },
+
+  // Botão categoria
+  categoryButton: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    backgroundColor: colors.card,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.border
+  },
+
+  // Categoria ativa
+  categoryButtonActive: {
+    backgroundColor: colors.category,
+    borderColor: colors.category
+  },
+
+  // Texto da categoria
+  categoryText: {
+    color: colors.text
+  },
+
+  // Botão salvar
+  saveButton: {
+    backgroundColor: colors.primary,
+    padding: spacing.md,
+    borderRadius: 8,
+    alignItems: "center",
+    marginTop: spacing.xl
+  },
+
+  // Botão desabilitado
+  disabledButton: {
+    opacity: 0.65
+  },
+
+  // Texto do botão salvar
+  saveButtonText: {
+    color: colors.white,
+    fontSize: 18,
+    fontWeight: "bold"
+  },
 });

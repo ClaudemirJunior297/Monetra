@@ -1,122 +1,351 @@
-// Importações dos componentes e hooks do React Native
+// Função: Mostrar gráficos e indicadores das transações
+
+// Importa componentes do React Native
 import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
-// Hook para executar ações quando a tela ganha foco
+
+// Importa hook para atualizar ao abrir a tela
 import { useFocusEffect } from "expo-router";
-// Hook para evitar recriação desnecessária de funções
+
+// Importa hook para otimizar funções
 import { useCallback } from "react";
-// Tokens de design (cores, espaçamentos, tipografia)
+
+// Importa cores e estilos
 import { colors, spacing, typography } from "@/styles/theme";
-// Hook customizado para acessar o contexto de transações
+
+// Importa o contexto das transações
 import { useTransactions } from "@/contexts/TransactionContext";
 
-// Função auxiliar para formatar valores monetários no padrão brasileiro
-// Exemplo: 1234.56 -> "R$ 1.234,56"
-const currency = (value: number) => value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+// Função: Formatar valor em moeda brasileira
+const currency = (value: number) =>
+  value.toLocaleString("pt-BR", {
+    style: "currency",
+    currency: "BRL"
+  });
 
-// Componente principal da tela de Gráficos/Indicadores
+// Função principal da tela
 export default function Graphs() {
-  // Obtém dados e funções do contexto de transações
-  const { summary, transactions, loading, error, refresh } = useTransactions();
-  
-  // Converte o objeto de categorias para array e ordena por valor (maior para menor)
-  // Exemplo: { Alimentação: 150, Transporte: 80 } -> [["Alimentação", 150], ["Transporte", 80]]
-  const entries = Object.entries(summary.categoryBreakdown).sort(([, a], [, b]) => (b || 0) - (a || 0));
 
-  // useFocusEffect: atualiza os dados sempre que a tela recebe foco (quando o usuário navega até ela)
-  useFocusEffect(useCallback(() => {
-    refresh(); // Recarrega as transações do banco
-  }, [refresh])); // dependência: refresh (estável, não causa recriação desnecessária)
+  // Pega dados e funções das transações
+  const { summary, transactions, loading, error, refresh } = useTransactions();
+
+  // Organiza categorias do maior valor para o menor
+  const entries = Object.entries(summary.categoryBreakdown).sort(
+    ([, a], [, b]) => (b || 0) - (a || 0)
+  );
+
+  // Atualiza os dados ao entrar na tela
+  useFocusEffect(
+    useCallback(() => {
+      refresh();
+    }, [refresh])
+  );
 
   return (
-    // ScrollView principal com suporte a "puxar para recarregar" (Pull to Refresh)
-    <ScrollView 
-      style={styles.container} 
-      refreshControl={<RefreshControl refreshing={loading} onRefresh={refresh} tintColor={colors.primary} />}
+
+    // Tela com rolagem
+    <ScrollView
+      style={styles.container}
+
+      // Atualização ao puxar a tela
+      refreshControl={
+        <RefreshControl
+          refreshing={loading}
+          onRefresh={refresh}
+          tintColor={colors.primary}
+        />
+      }
     >
-      {/* Cabeçalho da tela */}
+
+      {/* Cabeçalho */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Indicadores</Text>
-        <Text style={styles.headerSubtitle}>Baseados nas transações cadastradas</Text>
+
+        <Text style={styles.headerTitle}>
+          Indicadores
+        </Text>
+
+        <Text style={styles.headerSubtitle}>
+          Baseados nas transações cadastradas
+        </Text>
+
       </View>
 
-      {/* Exibe mensagem de erro se houver */}
-      {error ? <Text style={styles.error}>{error}</Text> : null}
+      {/* Mensagem de erro */}
+      {error ? (
+        <Text style={styles.error}>
+          {error}
+        </Text>
+      ) : null}
 
-      {/* Cartão de resumo: total de despesas */}
+      {/* Card do total de despesas */}
       <View style={styles.totalCard}>
-        <Text style={styles.totalLabel}>Despesas registradas</Text>
-        <Text style={styles.totalValue}>{currency(summary.totalExpense)}</Text>
-        <Text style={styles.totalHint}>{transactions.length} transações no banco</Text>
+
+        <Text style={styles.totalLabel}>
+          Despesas registradas
+        </Text>
+
+        <Text style={styles.totalValue}>
+          {currency(summary.totalExpense)}
+        </Text>
+
+        <Text style={styles.totalHint}>
+          {transactions.length} transações no banco
+        </Text>
+
       </View>
 
-      {/* Estado de carregamento inicial (primeira carga, sem transações) */}
+      {/* Loading */}
       {loading && transactions.length === 0 ? (
+
         <View style={styles.stateBox}>
           <ActivityIndicator color={colors.primary} />
         </View>
+
       ) : null}
 
-      {/* Estado vazio: nenhuma despesa cadastrada */}
+      {/* Mensagem quando não existem despesas */}
       {!loading && entries.length === 0 ? (
+
         <View style={styles.stateBox}>
-          <Text style={styles.emptyTitle}>Sem despesas para analisar</Text>
-          <Text style={styles.emptyText}>Os gráficos aparecem automaticamente quando houver despesas salvas.</Text>
+
+          <Text style={styles.emptyTitle}>
+            Sem despesas para analisar
+          </Text>
+
+          <Text style={styles.emptyText}>
+            Os gráficos aparecem automaticamente quando houver despesas salvas.
+          </Text>
+
         </View>
+
       ) : null}
 
-      {/* Gráficos de categorias (somente se houver dados) */}
+      {/* Lista de categorias */}
       {entries.length > 0 ? (
+
         <View style={styles.chartContainer}>
-          <Text style={styles.sectionTitle}>Distribuição por categoria</Text>
-          {/* Mapeia cada categoria para uma barra de progresso */}
+
+          <Text style={styles.sectionTitle}>
+            Distribuição por categoria
+          </Text>
+
+          {/* Percorre as categorias */}
           {entries.map(([category, amount]) => {
-            // Calcula o percentual da categoria em relação ao total de despesas
-            const percentage = summary.totalExpense > 0 ? ((amount || 0) / summary.totalExpense) * 100 : 0;
+
+            // Calcula porcentagem da categoria
+            const percentage =
+              summary.totalExpense > 0
+                ? ((amount || 0) / summary.totalExpense) * 100
+                : 0;
+
             return (
+
               <View key={category} style={styles.categoryItem}>
-                {/* Cabeçalho da categoria: bolinha colorida, nome e percentual */}
+
+                {/* Cabeçalho da categoria */}
                 <View style={styles.categoryHeader}>
-                  <View style={styles.colorDot} />        {/* Indicador visual colorido */}
-                  <Text style={styles.categoryName}>{category}</Text>
-                  <Text style={styles.categoryPercentage}>{percentage.toFixed(0)}%</Text>
+
+                  {/* Bolinha colorida */}
+                  <View style={styles.colorDot} />
+
+                  {/* Nome da categoria */}
+                  <Text style={styles.categoryName}>
+                    {category}
+                  </Text>
+
+                  {/* Porcentagem */}
+                  <Text style={styles.categoryPercentage}>
+                    {percentage.toFixed(0)}%
+                  </Text>
+
                 </View>
-                {/* Barra de progresso que representa visualmente o percentual */}
+
+                {/* Barra de progresso */}
                 <View style={styles.progressBar}>
-                  <View style={[styles.progressFill, { width: `${Math.min(percentage, 100)}%` }]} />
+
+                  <View
+                    style={[
+                      styles.progressFill,
+                      {
+                        width: `${Math.min(percentage, 100)}%`
+                      }
+                    ]}
+                  />
+
                 </View>
-                {/* Valor monetário da categoria */}
-                <Text style={styles.categoryAmount}>{currency(amount || 0)}</Text>
+
+                {/* Valor da categoria */}
+                <Text style={styles.categoryAmount}>
+                  {currency(amount || 0)}
+                </Text>
+
               </View>
             );
           })}
         </View>
+
       ) : null}
+
     </ScrollView>
   );
 }
 
-// Estilos do componente (definidos com StyleSheet)
+// Estilos da tela
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },                    // Fundo principal da tela
-  header: { backgroundColor: colors.card, padding: spacing.lg, paddingTop: spacing.xxl, alignItems: "center", borderBottomWidth: 1, borderBottomColor: colors.border }, // Cabeçalho com borda inferior
-  headerTitle: { ...typography.title, color: colors.white },                    // Título do cabeçalho
-  headerSubtitle: { ...typography.body, color: colors.textSecondary, marginTop: spacing.xs, textAlign: "center" }, // Subtítulo do cabeçalho
-  error: { color: colors.alert, padding: spacing.lg },                          // Mensagem de erro (cor vermelha)
-  totalCard: { backgroundColor: colors.card, margin: spacing.lg, padding: spacing.lg, borderRadius: 8, alignItems: "center", borderWidth: 1, borderColor: colors.border }, // Cartão do total de despesas
-  totalLabel: { ...typography.body, color: colors.textSecondary },              // Rótulo "Despesas registradas"
-  totalValue: { ...typography.title, fontSize: 34, color: colors.expense, marginTop: spacing.sm }, // Valor total (vermelho/despesa)
-  totalHint: { ...typography.caption, color: colors.textSecondary, marginTop: spacing.sm }, // Dica com quantidade de transações
-  chartContainer: { padding: spacing.lg },                                      // Container dos gráficos
-  sectionTitle: { ...typography.subtitle, color: colors.white, marginBottom: spacing.md }, // Título da seção "Distribuição por categoria"
-  categoryItem: { marginBottom: spacing.md },                                   // Cada item de categoria
-  categoryHeader: { flexDirection: "row", alignItems: "center", marginBottom: spacing.xs }, // Linha com nome + percentual
-  colorDot: { width: 12, height: 12, borderRadius: 6, marginRight: spacing.sm, backgroundColor: colors.category }, // Bolinha colorida representando a categoria
-  categoryName: { ...typography.body, color: colors.text, flex: 1 },            // Nome da categoria
-  categoryPercentage: { ...typography.body, color: colors.textSecondary },      // Percentual da categoria
-  categoryAmount: { ...typography.caption, color: colors.textSecondary, marginTop: spacing.xs }, // Valor formatado da categoria
-  progressBar: { height: 8, backgroundColor: colors.border, borderRadius: 4, overflow: "hidden" }, // Fundo da barra de progresso
-  progressFill: { height: "100%", borderRadius: 4, backgroundColor: colors.category }, // Preenchimento colorido da barra
-  stateBox: { padding: spacing.xl, alignItems: "center", gap: spacing.sm },     // Container para estados (carregando/vazio)
-  emptyTitle: { ...typography.subtitle, color: colors.white, textAlign: "center" }, // Título do estado vazio
-  emptyText: { ...typography.body, color: colors.textSecondary, textAlign: "center" }, // Texto explicativo do estado vazio
+
+  // Container principal
+  container: {
+    flex: 1,
+    backgroundColor: colors.background
+  },
+
+  // Cabeçalho
+  header: {
+    backgroundColor: colors.card,
+    padding: spacing.lg,
+    paddingTop: spacing.xxl,
+    alignItems: "center",
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border
+  },
+
+  // Título
+  headerTitle: {
+    ...typography.title,
+    color: colors.white
+  },
+
+  // Subtítulo
+  headerSubtitle: {
+    ...typography.body,
+    color: colors.textSecondary,
+    marginTop: spacing.xs,
+    textAlign: "center"
+  },
+
+  // Mensagem de erro
+  error: {
+    color: colors.alert,
+    padding: spacing.lg
+  },
+
+  // Card do total
+  totalCard: {
+    backgroundColor: colors.card,
+    margin: spacing.lg,
+    padding: spacing.lg,
+    borderRadius: 8,
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: colors.border
+  },
+
+  // Texto do card
+  totalLabel: {
+    ...typography.body,
+    color: colors.textSecondary
+  },
+
+  // Valor total
+  totalValue: {
+    ...typography.title,
+    fontSize: 34,
+    color: colors.expense,
+    marginTop: spacing.sm
+  },
+
+  // Texto auxiliar
+  totalHint: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    marginTop: spacing.sm
+  },
+
+  // Área dos gráficos
+  chartContainer: {
+    padding: spacing.lg
+  },
+
+  // Título da seção
+  sectionTitle: {
+    ...typography.subtitle,
+    color: colors.white,
+    marginBottom: spacing.md
+  },
+
+  // Item da categoria
+  categoryItem: {
+    marginBottom: spacing.md
+  },
+
+  // Cabeçalho da categoria
+  categoryHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: spacing.xs
+  },
+
+  // Bolinha colorida
+  colorDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    marginRight: spacing.sm,
+    backgroundColor: colors.category
+  },
+
+  // Nome da categoria
+  categoryName: {
+    ...typography.body,
+    color: colors.text,
+    flex: 1
+  },
+
+  // Porcentagem
+  categoryPercentage: {
+    ...typography.body,
+    color: colors.textSecondary
+  },
+
+  // Valor da categoria
+  categoryAmount: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    marginTop: spacing.xs
+  },
+
+  // Barra de progresso
+  progressBar: {
+    height: 8,
+    backgroundColor: colors.border,
+    borderRadius: 4,
+    overflow: "hidden"
+  },
+
+  // Parte preenchida da barra
+  progressFill: {
+    height: "100%",
+    borderRadius: 4,
+    backgroundColor: colors.category
+  },
+
+  // Área de estados
+  stateBox: {
+    padding: spacing.xl,
+    alignItems: "center",
+    gap: spacing.sm
+  },
+
+  // Título vazio
+  emptyTitle: {
+    ...typography.subtitle,
+    color: colors.white,
+    textAlign: "center"
+  },
+
+  // Texto vazio
+  emptyText: {
+    ...typography.body,
+    color: colors.textSecondary,
+    textAlign: "center"
+  },
 });

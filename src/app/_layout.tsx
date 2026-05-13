@@ -1,32 +1,38 @@
 // Importação do componente Stack Navigator do Expo Router
 import { Stack } from 'expo-router';
-// Importação do Provider de autenticação (contexto)
+
+// Importação do Provider de autenticação
 import { AuthProvider } from '@/contexts/AuthContext';
-// Importação do Provider de transações (contexto)
+
+// Importação do Provider de transações
 import { TransactionProvider } from '@/contexts/TransactionContext';
 
-// Componente principal de layout da aplicação (root layout)
+// Função: Criar o layout principal da aplicação
 export default function RootLayout() {
   return (
-    // Provider de autenticação - disponibiliza dados do usuário para toda a aplicação
+
+    // Provider responsável pela autenticação
     <AuthProvider>
-      {/* Provider de transações - disponibiliza dados financeiros para toda a aplicação */}
-      {/* Nota: TransactionProvider depende do AuthProvider (precisa do user autenticado) */}
+
+      // Provider responsável pelas transações
       <TransactionProvider>
-        {/* Stack Navigator - gerencia a navegação entre telas em pilha */}
-        {/* screenOptions: configurações padrão para todas as telas */}
+
+        {/* Navegação em pilha */}
         <Stack screenOptions={{ headerShown: false }}>
-          {/* Tela de login/entrada (primeira tela exibida) */}
+
+          {/* Tela inicial/login */}
           <Stack.Screen name="index" />
-          
-          {/* Tela de cadastro de novo usuário */}
+
+          {/* Tela de cadastro */}
           <Stack.Screen name="signup" />
-          
-          {/* Grupo de telas com abas (Dashboard, Transações, Add, Gráficos, Perfil) */}
-          {/* O nome "(tabs)" indica um layout com navegação por abas */}
+
+          {/* Grupo de telas com abas */}
           <Stack.Screen name="(tabs)" />
+
         </Stack>
+
       </TransactionProvider>
+
     </AuthProvider>
   );
 }

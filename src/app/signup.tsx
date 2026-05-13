@@ -1,139 +1,176 @@
-// FUNÇÃO: Tela de cadastro de novos usuários
+// Função: Tela de cadastro de usuários
 
 // Importações
-import { useState } from "react"; // Para criar variáveis que mudam na tela
+import { useState } from "react";
 import { Image, StyleSheet, View, Text, ScrollView, KeyboardAvoidingView, Platform, Alert, TouchableWithoutFeedback, Keyboard } from "react-native";
-import { Link } from "expo-router"; // Para navegação entre telas
-import { Input } from "@/components/Input"; // Componente de campo de texto
-import { Button } from "@/components/Button"; // Componente de botão
-import { useAuth } from "@/contexts/AuthContext"; // Hook de autenticação
-import { colors, spacing, typography } from "@/styles/theme"; // Cores e estilos
 
+// Navegação entre telas
+import { Link } from "expo-router";
+
+// Componentes personalizados
+import { Input } from "@/components/Input";
+import { Button } from "@/components/Button";
+
+// Contexto de autenticação
+import { useAuth } from "@/contexts/AuthContext";
+
+// Cores e estilos do projeto
+import { colors, spacing, typography } from "@/styles/theme";
+
+// Função principal da tela de cadastro
 export default function Signup() {
-    // Estados: variáveis que o React monitora
-    const [nome, setNome] = useState("");           // Nome do usuário
-    const [email, setEmail] = useState("");         // E-mail
-    const [senha, setSenha] = useState("");         // Senha
-    const [confirmarSenha, setConfirmarSenha] = useState(""); // Confirmação da senha
-    const { signUp, loading } = useAuth(); // Pega a função de cadastro e o estado de carregamento
 
-    // Função que valida se o e-mail tem formato correto
-    // Exemplo válido: usuario@dominio.com.br | Exemplo inválido: usuario@dominio (sem ponto)
+    // Estado do nome
+    const [nome, setNome] = useState("");
+
+    // Estado do e-mail
+    const [email, setEmail] = useState("");
+
+    // Estado da senha
+    const [senha, setSenha] = useState("");
+
+    // Estado da confirmação da senha
+    const [confirmarSenha, setConfirmarSenha] = useState("");
+
+    // Função de cadastro e loading
+    const { signUp, loading } = useAuth();
+
+    // Função: Validar e-mail
     const validateEmail = (email: string) => {
+
+        // Regex para validar formato do e-mail
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
         return emailRegex.test(email);
     };
 
-    // Função executada quando o usuário clica em Cadastrar
+    // Função: Fazer cadastro
     const handleSignup = async () => {
-        // Fecha o teclado automaticamente (melhora a experiência do usuário)
+
+        // Fecha o teclado
         Keyboard.dismiss();
-        
-        // VALIDAÇÃO 1: campos vazios (nenhum campo pode estar em branco)
+
+        // Verifica campos vazios
         if (!nome.trim() || !email.trim() || !senha || !confirmarSenha) {
             Alert.alert("Erro", "Por favor, preencha todos os campos");
             return;
         }
-        
-        // VALIDAÇÃO 2: nome muito curto (evita nomes como "Jo" ou "A")
+
+        // Verifica tamanho do nome
         if (nome.trim().length < 3) {
             Alert.alert("Erro", "O nome deve ter pelo menos 3 caracteres");
             return;
         }
-        
-        // VALIDAÇÃO 3: e-mail inválido (formato incorreto)
+
+        // Verifica se o e-mail é válido
         if (!validateEmail(email)) {
             Alert.alert("Erro", "Por favor, insira um e-mail válido");
             return;
         }
-        
-        // VALIDAÇÃO 4: senha muito curta (mínimo de segurança recomendado)
+
+        // Verifica tamanho mínimo da senha
         if (senha.length < 6) {
             Alert.alert("Erro", "A senha deve ter pelo menos 6 caracteres");
             return;
         }
-        
-        // VALIDAÇÃO 5: senhas não conferem (evita erro de digitação)
+
+        // Verifica se as senhas são iguais
         if (senha !== confirmarSenha) {
             Alert.alert("Erro", "As senhas não conferem");
             return;
         }
-        
-        // Tenta criar a conta chamando a função do contexto de autenticação
+
         try {
-            await signUp(nome, email, senha); // Se der certo, vai para a tela principal (automaticamente)
+
+            // Faz cadastro
+            await signUp(nome, email, senha);
+
         } catch (error) {
+
+            // Exibe erro
             Alert.alert("Erro", "Falha ao criar conta. Tente novamente.");
         }
     };
 
     return (
-        // TouchableWithoutFeedback: tocar em qualquer lugar fecha o teclado (boa prática em formulários)
+
+        // Fecha teclado ao tocar fora
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-            
-            {/* KeyboardAvoidingView: evita que o teclado cubra os campos */}
-            {/* behavior ajusta o comportamento: "padding" no iOS, "height" no Android */}
-            <KeyboardAvoidingView 
-                style={{ flex: 1 }} 
+
+            {/* Evita teclado cobrir os inputs */}
+            <KeyboardAvoidingView
+                style={{ flex: 1 }}
                 behavior={Platform.select({ ios: "padding", android: "height" })}
             >
-                {/* ScrollView: permite rolar a tela (útil quando teclado aparece e os campos ficam escondidos) */}
+
+                {/* Permite rolagem da tela */}
                 <ScrollView contentContainerStyle={styles.scrollContainer}>
+
+                    {/* Container principal */}
                     <View style={styles.container}>
-                        
-                        {/* LOGO (mesma imagem da tela de login para manter identidade visual) */}
-                        <Image source={require("@/assets/logo.png")} style={styles.illustration} />
 
-                        {/* TÍTULOS */}
+                        {/* Logo do app */}
+                        <Image
+                            source={require("@/assets/logo.png")}
+                            style={styles.illustration}
+                        />
+
+                        {/* Título */}
                         <Text style={styles.title}>Criar Conta</Text>
-                        <Text style={styles.subtitle}>Comece a controlar seus gastos hoje</Text>
 
-                        {/* FORMULÁRIO DE CADASTRO */}
+                        {/* Subtítulo */}
+                        <Text style={styles.subtitle}>
+                            Comece a controlar seus gastos hoje
+                        </Text>
+
+                        {/* Formulário */}
                         <View style={styles.form}>
-                            {/* Campo: Nome completo */}
-                            <Input 
+
+                            {/* Campo nome */}
+                            <Input
                                 placeholder="Nome completo"
                                 value={nome}
                                 onChangeText={setNome}
-                                autoCapitalize="words" // Primeira letra de cada palavra maiúscula (ex: "João Silva")
+                                autoCapitalize="words"
                             />
-                            
-                            {/* Campo: E-mail */}
-                            <Input 
-                                placeholder="E-mail" 
-                                keyboardType="email-address" // Teclado com @ e . (facilita digitação)
+
+                            {/* Campo e-mail */}
+                            <Input
+                                placeholder="E-mail"
+                                keyboardType="email-address"
                                 value={email}
                                 onChangeText={setEmail}
-                                autoCapitalize="none" // Não coloca letras maiúsculas automaticamente
+                                autoCapitalize="none"
                             />
-                            
-                            {/* Campo: Senha */}
-                            <Input 
-                                placeholder="Senha" 
-                                secureTextEntry // Esconde os caracteres digitados (exibe •••)
+
+                            {/* Campo senha */}
+                            <Input
+                                placeholder="Senha"
+                                secureTextEntry
                                 value={senha}
                                 onChangeText={setSenha}
                             />
-                            
-                            {/* Campo: Confirmar Senha (reforça que o usuário digitou corretamente) */}
-                            <Input 
-                                placeholder="Confirme sua senha" 
-                                secureTextEntry // Esconde os caracteres digitados
+
+                            {/* Campo confirmar senha */}
+                            <Input
+                                placeholder="Confirme sua senha"
+                                secureTextEntry
                                 value={confirmarSenha}
                                 onChangeText={setConfirmarSenha}
                             />
 
-                            {/* BOTÃO DE CADASTRAR */}
-                            <Button 
-                                label={loading ? "Cadastrando..." : "Cadastrar"} // Texto muda enquanto carrega
+                            {/* Botão cadastrar */}
+                            <Button
+                                label={loading ? "Cadastrando..." : "Cadastrar"}
                                 onPress={handleSignup}
-                                disabled={loading} // Desabilita enquanto carrega (evita múltiplos envios)
+                                disabled={loading}
                             />
                         </View>
-                        
-                        {/* LINK PARA VOLTAR AO LOGIN (quem já tem conta volta para tela inicial) */}
+
+                        {/* Link para login */}
                         <Text style={styles.footerText}>
-                            Já tem uma conta? {" "}
+                            Já tem uma conta?{" "}
+
                             <Link href="/" style={styles.footerLink}>
                                 Faça login.
                             </Link>
@@ -145,46 +182,62 @@ export default function Signup() {
     )
 }
 
-// ========== ESTILOS DA TELA ==========
+// Estilos da tela
 const styles = StyleSheet.create({
+
+    // ScrollView
     scrollContainer: {
-        flexGrow: 1, // ScrollView ocupa a tela toda (permite rolagem mesmo com conteúdo pequeno)
+        flexGrow: 1,
     },
+
+    // Container principal
     container: {
-        flex: 1, // Ocupa a tela toda
-        backgroundColor: colors.background, // Fundo escuro (#121212) - consistente com o resto do app
-        padding: spacing.xl, // Espaçamento interno de 32px
-        justifyContent: "center", // Centraliza o conteúdo verticalmente
+        flex: 1,
+        backgroundColor: colors.background,
+        padding: spacing.xl,
+        justifyContent: "center",
     },
+
+    // Logo
     illustration: {
         width: "100%",
-        height: 180, // Ligeiramente menor que na tela de login (180 vs 200) para dar mais espaço aos campos
-        resizeMode: "contain", // Mantém a proporção da imagem sem distorcer
-        marginBottom: spacing.lg, // Espaço abaixo de 24px
+        height: 180,
+        resizeMode: "contain",
+        marginBottom: spacing.lg,
     },
+
+    // Título
     title: {
-        fontSize: 32, // Título menor que o da tela de login (40 vs 32) pois "Criar Conta" é menor
-        fontWeight: "900", // Negrito máximo (Black)
-        color: colors.white, // Texto branco (diferente da tela de login que usa verde)
+        fontSize: 32,
+        fontWeight: "900",
+        color: colors.white,
         textAlign: "center",
-        marginBottom: spacing.sm, // Espaço abaixo de 8px
+        marginBottom: spacing.sm,
     },
+
+    // Subtítulo
     subtitle: {
         fontSize: 16,
-        color: colors.textSecondary, // Cinza claro (#9E9E9E)
+        color: colors.textSecondary,
         textAlign: "center",
-        marginBottom: spacing.xl, // Espaço abaixo de 32px
+        marginBottom: spacing.xl,
     },
+
+    // Formulário
     form: {
-        gap: spacing.md, // Espaço entre os campos de 16px (funciona como margin bottom)
+        gap: spacing.md,
     },
+
+    // Texto inferior
     footerText: {
         textAlign: "center",
-        marginTop: spacing.lg, // Espaço acima de 24px
-        color: colors.textSecondary, // Cinza claro
+        marginTop: spacing.lg,
+        color: colors.textSecondary,
     },
+
+    // Link de login
     footerLink: {
-        color: colors.primary, // Link em verde (#00C853) - destaque visual
-        fontWeight: "700", // Negrito (Bold)
+        color: colors.primary,
+        fontWeight: "700",
     },
 })

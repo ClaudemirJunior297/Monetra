@@ -1,64 +1,99 @@
-// Importa o hook useState do React para controlar estados do componente
+// Função: Mostrar e gerenciar as transações
+
+// Importa o useState
 import { useState } from "react";
 
-// Importa componentes nativos do React Native
-import { ActivityIndicator, Alert, FlatList, Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+// Importa componentes do React Native
+import {
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  Modal,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
+} from "react-native";
 
-// Hook do Expo Router que executa ações quando a tela ganha foco
+// Importa atualização ao abrir a tela
 import { useFocusEffect } from "expo-router";
 
-// Importa o useCallback para memorizar funções
+// Importa hook para otimizar funções
 import { useCallback } from "react";
 
-// Importa ícones da biblioteca Feather
+// Importa ícones
 import { Feather } from "@expo/vector-icons";
 
-// Importa cores, espaçamentos e tipografia personalizados do tema
+// Importa cores e estilos
 import { colors, spacing, typography } from "@/styles/theme";
 
-// Importa tipos e categorias das transações
-import { categories, Category, Transaction, TransactionType } from "@/types/transaction";
+// Importa tipos e categorias
+import {
+  categories,
+  Category,
+  Transaction,
+  TransactionType
+} from "@/types/transaction";
 
-// Importa o contexto responsável pelas transações
+// Importa contexto das transações
 import { useTransactions } from "@/contexts/TransactionContext";
 
-// Função para formatar valores em moeda brasileira (R$)
-const currency = (value: number) => value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+// Função: Formatar moeda brasileira
+const currency = (value: number) =>
+  value.toLocaleString("pt-BR", {
+    style: "currency",
+    currency: "BRL"
+  });
 
-// Função para converter texto digitado em número
-const parseAmount = (value: string) => Number(value.replace(/\./g, "").replace(",", "."));
+// Função: Converter texto em número
+const parseAmount = (value: string) =>
+  Number(value.replace(/\./g, "").replace(",", "."));
 
-// Componente principal da tela de transações
+// Função principal da tela
 export default function Transactions() {
 
-  // Dados e funções vindas do contexto
-  const { transactions, loading, error, refresh, updateTransaction, deleteTransaction } = useTransactions();
+  // Pega dados das transações
+  const {
+    transactions,
+    loading,
+    error,
+    refresh,
+    updateTransaction,
+    deleteTransaction
+  } = useTransactions();
 
-  // Estado da transação que está sendo editada
-  const [editing, setEditing] = useState<Transaction | null>(null);
+  // Estado da transação editada
+  const [editing, setEditing] =
+    useState<Transaction | null>(null);
 
-  // Estado da descrição da transação
+  // Estado da descrição
   const [description, setDescription] = useState("");
 
-  // Estado do valor da transação
+  // Estado do valor
   const [amount, setAmount] = useState("");
 
-  // Estado do tipo da transação (receita ou despesa)
-  const [type, setType] = useState<TransactionType>("expense");
+  // Estado do tipo
+  const [type, setType] =
+    useState<TransactionType>("expense");
 
-  // Estado da categoria da transação
-  const [category, setCategory] = useState<Category>("Outros");
+  // Estado da categoria
+  const [category, setCategory] =
+    useState<Category>("Outros");
 
-  // Estado que controla o carregamento ao salvar
+  // Estado de loading
   const [saving, setSaving] = useState(false);
 
-  // Atualiza a lista de transações sempre que a tela recebe foco
-  useFocusEffect(useCallback(() => {
-    refresh();
-  }, [refresh]));
+  // Atualiza ao abrir a tela
+  useFocusEffect(
+    useCallback(() => {
+      refresh();
+    }, [refresh])
+  );
 
-  // Abre o modal de edição preenchendo os dados da transação
+  // Função: Abrir edição
   const openEdit = (transaction: Transaction) => {
+
     setEditing(transaction);
     setDescription(transaction.description);
     setAmount(String(transaction.amount).replace(".", ","));
@@ -66,33 +101,43 @@ export default function Transactions() {
     setCategory(transaction.category);
   };
 
-  // Fecha o modal de edição
+  // Função: Fechar edição
   const closeEdit = () => {
+
     setEditing(null);
     setSaving(false);
   };
 
-  // Atualiza uma transação
+  // Função: Atualizar transação
   const handleUpdate = async () => {
 
-    // Verifica se existe uma transação sendo editada
+    // Verifica se existe transação
     if (!editing) return;
 
-    // Converte o valor digitado em número
+    // Converte valor
     const amountNumber = parseAmount(amount);
 
-    // Validação dos campos
-    if (!description.trim() || Number.isNaN(amountNumber) || amountNumber <= 0) {
-      Alert.alert("Erro", "Preencha descrição e valor corretamente.");
+    // Validação
+    if (
+      !description.trim() ||
+      Number.isNaN(amountNumber) ||
+      amountNumber <= 0
+    ) {
+
+      Alert.alert(
+        "Erro",
+        "Preencha descrição e valor corretamente."
+      );
+
       return;
     }
 
     try {
 
-      // Ativa estado de salvamento
+      // Ativa loading
       setSaving(true);
 
-      // Atualiza a transação
+      // Atualiza transação
       await updateTransaction(editing.id, {
         description: description.trim(),
         amount: amountNumber,
@@ -101,98 +146,150 @@ export default function Transactions() {
         date: editing.date
       });
 
-      // Fecha o modal após salvar
+      // Fecha modal
       closeEdit();
 
     } catch (err) {
 
-      // Exibe mensagem de erro
-      Alert.alert("Erro", err instanceof Error ? err.message : "Não foi possível atualizar a transação.");
+      // Mostra erro
+      Alert.alert(
+        "Erro",
+        err instanceof Error
+          ? err.message
+          : "Não foi possível atualizar a transação."
+      );
 
-      // Remove estado de loading
+      // Remove loading
       setSaving(false);
     }
   };
 
-  // Confirma exclusão de uma transação
+  // Função: Confirmar exclusão
   const confirmDelete = (transaction: Transaction) => {
 
-    // Exibe alerta de confirmação
-    Alert.alert("Excluir transação", "Esta ação remove o registro do banco de dados.", [
+    Alert.alert(
+      "Excluir transação",
+      "Esta ação remove o registro do banco de dados.",
+      [
 
-      // Botão cancelar
-      { text: "Cancelar", style: "cancel" },
-
-      // Botão excluir
-      {
-        text: "Excluir",
-        style: "destructive",
-        onPress: async () => {
-          try {
-
-            // Exclui a transação
-            await deleteTransaction(transaction.id);
-
-          } catch (err) {
-
-            // Exibe erro caso falhe
-            Alert.alert("Erro", err instanceof Error ? err.message : "Não foi possível excluir a transação.");
-          }
+        // Botão cancelar
+        {
+          text: "Cancelar",
+          style: "cancel"
         },
-      },
-    ]);
+
+        // Botão excluir
+        {
+          text: "Excluir",
+          style: "destructive",
+
+          onPress: async () => {
+            try {
+
+              // Exclui transação
+              await deleteTransaction(transaction.id);
+
+            } catch (err) {
+
+              // Mostra erro
+              Alert.alert(
+                "Erro",
+                err instanceof Error
+                  ? err.message
+                  : "Não foi possível excluir a transação."
+              );
+            }
+          },
+        },
+      ]
+    );
   };
 
-  // Renderiza cada item da lista
+  // Função: Renderizar item
   const renderItem = ({ item }: { item: Transaction }) => (
+
     <View style={styles.transactionItem}>
 
-      {/* Informações da transação */}
+      {/* Informações */}
       <View style={styles.transactionInfo}>
 
         {/* Descrição */}
-        <Text style={styles.transactionDesc}>{item.description}</Text>
+        <Text style={styles.transactionDesc}>
+          {item.description}
+        </Text>
 
         {/* Categoria e data */}
         <Text style={styles.transactionMeta}>
           {item.category} - {item.date.toLocaleDateString("pt-BR")}
         </Text>
+
       </View>
 
-      {/* Valor da transação */}
+      {/* Valor */}
       <Text
         style={[
           styles.transactionAmount,
-          { color: item.type === "income" ? colors.success : colors.expense }
+          {
+            color:
+              item.type === "income"
+                ? colors.success
+                : colors.expense
+          }
         ]}
       >
         {item.type === "income" ? "+ " : "- "}
         {currency(item.amount)}
       </Text>
 
-      {/* Botões de ação */}
+      {/* Botões */}
       <View style={styles.actions}>
 
         {/* Botão editar */}
-        <TouchableOpacity style={styles.iconButton} onPress={() => openEdit(item)}>
-          <Feather name="edit-2" size={18} color={colors.text} />
+        <TouchableOpacity
+          style={styles.iconButton}
+          onPress={() => openEdit(item)}
+        >
+
+          <Feather
+            name="edit-2"
+            size={18}
+            color={colors.text}
+          />
+
         </TouchableOpacity>
 
         {/* Botão excluir */}
-        <TouchableOpacity style={styles.iconButton} onPress={() => confirmDelete(item)}>
-          <Feather name="trash-2" size={18} color={colors.expense} />
+        <TouchableOpacity
+          style={styles.iconButton}
+          onPress={() => confirmDelete(item)}
+        >
+
+          <Feather
+            name="trash-2"
+            size={18}
+            color={colors.expense}
+          />
+
         </TouchableOpacity>
+
       </View>
+
     </View>
   );
 
   return (
+
+    // Container principal
     <View style={styles.container}>
 
-      {/* Exibe mensagem de erro caso exista */}
-      {error ? <Text style={styles.error}>{error}</Text> : null}
+      {/* Mensagem erro */}
+      {error ? (
+        <Text style={styles.error}>
+          {error}
+        </Text>
+      ) : null}
 
-      {/* Exibe loading caso esteja carregando */}
+      {/* Loading */}
       {loading && transactions.length === 0 ? (
 
         <View style={styles.stateBox}>
@@ -206,11 +303,15 @@ export default function Transactions() {
           data={transactions}
           keyExtractor={(item) => item.id}
           renderItem={renderItem}
-          contentContainerStyle={transactions.length ? styles.list : styles.emptyList}
+          contentContainerStyle={
+            transactions.length
+              ? styles.list
+              : styles.emptyList
+          }
           onRefresh={refresh}
           refreshing={loading}
 
-          // Componente exibido quando não existem transações
+          // Mensagem lista vazia
           ListEmptyComponent={
             <Text style={styles.emptyText}>
               Nenhuma transação cadastrada.
@@ -219,15 +320,24 @@ export default function Transactions() {
         />
       )}
 
-      {/* Modal de edição */}
-      <Modal visible={!!editing} transparent animationType="fade" onRequestClose={closeEdit}>
+      {/* Modal */}
+      <Modal
+        visible={!!editing}
+        transparent
+        animationType="fade"
+        onRequestClose={closeEdit}
+      >
 
+        {/* Fundo modal */}
         <View style={styles.modalOverlay}>
 
+          {/* Conteúdo modal */}
           <View style={styles.modalContent}>
 
-            {/* Título do modal */}
-            <Text style={styles.modalTitle}>Editar transação</Text>
+            {/* Título */}
+            <Text style={styles.modalTitle}>
+              Editar transação
+            </Text>
 
             {/* Campo descrição */}
             <TextInput
@@ -248,68 +358,103 @@ export default function Transactions() {
               placeholderTextColor={colors.textSecondary}
             />
 
-            {/* Seleção do tipo */}
+            {/* Tipos */}
             <View style={styles.typeRow}>
 
               {/* Botão despesa */}
               <TouchableOpacity
-                style={[styles.typeButton, type === "expense" && styles.expenseActive]}
+                style={[
+                  styles.typeButton,
+                  type === "expense" && styles.expenseActive
+                ]}
                 onPress={() => setType("expense")}
               >
-                <Text style={styles.typeText}>Despesa</Text>
+
+                <Text style={styles.typeText}>
+                  Despesa
+                </Text>
+
               </TouchableOpacity>
 
               {/* Botão receita */}
               <TouchableOpacity
-                style={[styles.typeButton, type === "income" && styles.incomeActive]}
+                style={[
+                  styles.typeButton,
+                  type === "income" && styles.incomeActive
+                ]}
                 onPress={() => setType("income")}
               >
-                <Text style={styles.typeText}>Receita</Text>
+
+                <Text style={styles.typeText}>
+                  Receita
+                </Text>
+
               </TouchableOpacity>
+
             </View>
 
-            {/* Lista de categorias */}
+            {/* Categorias */}
             <View style={styles.categoriesGrid}>
 
               {categories.map((cat) => (
 
                 <TouchableOpacity
                   key={cat}
-                  style={[styles.categoryButton, category === cat && styles.categoryButtonActive]}
+                  style={[
+                    styles.categoryButton,
+                    category === cat &&
+                    styles.categoryButtonActive
+                  ]}
                   onPress={() => setCategory(cat)}
                 >
-                  <Text style={styles.categoryText}>{cat}</Text>
+
+                  <Text style={styles.categoryText}>
+                    {cat}
+                  </Text>
+
                 </TouchableOpacity>
               ))}
             </View>
 
-            {/* Botões do modal */}
+            {/* Botões modal */}
             <View style={styles.modalActions}>
 
-              {/* Botão cancelar */}
-              <TouchableOpacity style={styles.cancelButton} onPress={closeEdit}>
-                <Text style={styles.cancelText}>Cancelar</Text>
+              {/* Cancelar */}
+              <TouchableOpacity
+                style={styles.cancelButton}
+                onPress={closeEdit}
+              >
+
+                <Text style={styles.cancelText}>
+                  Cancelar
+                </Text>
+
               </TouchableOpacity>
 
-              {/* Botão salvar */}
+              {/* Salvar */}
               <TouchableOpacity
                 style={styles.saveButton}
                 onPress={handleUpdate}
                 disabled={saving}
               >
+
                 <Text style={styles.saveText}>
                   {saving ? "Salvando..." : "Salvar"}
                 </Text>
+
               </TouchableOpacity>
+
             </View>
+
           </View>
         </View>
       </Modal>
+
     </View>
   );
 }
 
-// Estilos do componente
+// Estilos
 const styles = StyleSheet.create({
 
   // Container principal
@@ -318,12 +463,12 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background
   },
 
-  // Lista com itens
+  // Lista
   list: {
     padding: spacing.md
   },
 
-  // Estilo da lista vazia
+  // Lista vazia
   emptyList: {
     flex: 1,
     alignItems: "center",
@@ -331,27 +476,27 @@ const styles = StyleSheet.create({
     padding: spacing.xl
   },
 
-  // Texto de erro
+  // Texto erro
   error: {
     color: colors.alert,
     padding: spacing.md
   },
 
-  // Texto quando não há transações
+  // Texto vazio
   emptyText: {
     ...typography.body,
     color: colors.textSecondary,
     textAlign: "center"
   },
 
-  // Caixa de loading
+  // Loading
   stateBox: {
     flex: 1,
     alignItems: "center",
     justifyContent: "center"
   },
 
-  // Item da transação
+  // Item transação
   transactionItem: {
     flexDirection: "row",
     alignItems: "center",
@@ -364,13 +509,13 @@ const styles = StyleSheet.create({
     gap: spacing.sm
   },
 
-  // Área das informações
+  // Informações
   transactionInfo: {
     flex: 1,
     minWidth: 0
   },
 
-  // Texto da descrição
+  // Descrição
   transactionDesc: {
     ...typography.body,
     color: colors.white,
@@ -378,26 +523,26 @@ const styles = StyleSheet.create({
     marginBottom: 4
   },
 
-  // Texto da categoria/data
+  // Categoria e data
   transactionMeta: {
     ...typography.caption,
     color: colors.textSecondary
   },
 
-  // Valor da transação
+  // Valor
   transactionAmount: {
     ...typography.subtitle,
     fontSize: 15,
     fontWeight: "600"
   },
 
-  // Área dos botões
+  // Área botões
   actions: {
     flexDirection: "row",
     gap: spacing.xs
   },
 
-  // Botões de ícone
+  // Botão ícone
   iconButton: {
     width: 34,
     height: 34,
@@ -407,7 +552,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background
   },
 
-  // Fundo escuro do modal
+  // Fundo modal
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.72)",
@@ -416,7 +561,7 @@ const styles = StyleSheet.create({
     padding: spacing.lg
   },
 
-  // Conteúdo do modal
+  // Conteúdo modal
   modalContent: {
     width: "100%",
     maxWidth: 520,
@@ -428,7 +573,7 @@ const styles = StyleSheet.create({
     gap: spacing.md
   },
 
-  // Título do modal
+  // Título modal
   modalTitle: {
     ...typography.subtitle,
     color: colors.white
@@ -444,13 +589,13 @@ const styles = StyleSheet.create({
     borderColor: colors.border
   },
 
-  // Linha dos tipos
+  // Linha tipos
   typeRow: {
     flexDirection: "row",
     gap: spacing.md
   },
 
-  // Botões de tipo
+  // Botão tipo
   typeButton: {
     flex: 1,
     padding: spacing.md,
@@ -461,32 +606,32 @@ const styles = StyleSheet.create({
     borderColor: colors.border
   },
 
-  // Estilo ativo para despesa
+  // Despesa ativa
   expenseActive: {
     backgroundColor: colors.expense,
     borderColor: colors.expense
   },
 
-  // Estilo ativo para receita
+  // Receita ativa
   incomeActive: {
     backgroundColor: colors.success,
     borderColor: colors.success
   },
 
-  // Texto dos botões de tipo
+  // Texto botão tipo
   typeText: {
     color: colors.white,
     fontWeight: "700"
   },
 
-  // Grid de categorias
+  // Área categorias
   categoriesGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
     gap: spacing.sm
   },
 
-  // Botão de categoria
+  // Botão categoria
   categoryButton: {
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
@@ -496,18 +641,18 @@ const styles = StyleSheet.create({
     borderColor: colors.border
   },
 
-  // Categoria selecionada
+  // Categoria ativa
   categoryButtonActive: {
     backgroundColor: colors.category,
     borderColor: colors.category
   },
 
-  // Texto da categoria
+  // Texto categoria
   categoryText: {
     color: colors.white
   },
 
-  // Área dos botões do modal
+  // Botões modal
   modalActions: {
     flexDirection: "row",
     justifyContent: "flex-end",
