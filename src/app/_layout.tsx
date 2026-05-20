@@ -10,15 +10,15 @@ import { TransactionProvider } from '@/contexts/TransactionContext';
 // Função: Criar o layout principal da aplicação
 export default function RootLayout() {
   return (
+    <>
+      {/* Provider responsável pela autenticação */}
+      <AuthProvider>
 
-    // Provider responsável pela autenticação
-    <AuthProvider>
+        {/* Provider responsável pelas transações */}
+        <TransactionProvider>
 
-      // Provider responsável pelas transações
-      <TransactionProvider>
-
-        {/* Navegação em pilha */}
-        <Stack screenOptions={{ headerShown: false }}>
+          {/* Navegação em pilha */}
+          <Stack screenOptions={{ headerShown: false }}>
 
           {/* Tela inicial/login */}
           <Stack.Screen name="index" />
@@ -29,10 +29,11 @@ export default function RootLayout() {
           {/* Grupo de telas com abas */}
           <Stack.Screen name="(tabs)" />
 
-        </Stack>
+          </Stack>
 
-      </TransactionProvider>
+        </TransactionProvider>
 
-    </AuthProvider>
+      </AuthProvider>
+    </>
   );
 }

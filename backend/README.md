@@ -5,7 +5,7 @@ Backend REST API simples para gerenciamento de transações financeiras, constru
 ## 🚀 Características
 
 - ✅ API REST CRUD completo
-- ✅ Dados em memória (ArrayList) - sem banco de dados
+- ✅ Banco de dados H2 persistente com schema inicializado a partir do arquivo `monetra.sql`
 - ✅ CORS habilitado globalmente
 - ✅ Swagger/OpenAPI integrado
 - ✅ Validações básicas

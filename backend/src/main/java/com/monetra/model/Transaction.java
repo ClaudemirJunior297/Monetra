@@ -25,7 +25,7 @@ import java.time.LocalDateTime;
  */
 @Schema(description = "Modelo de Transação Financeira")
 @Entity
-@Table(name = "transactions")
+@Table(name = "transacao")
 public class Transaction {
 
     /**
@@ -35,13 +35,14 @@ public class Transaction {
     @Schema(description = "ID único da transação", example = "1")
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_transacao")
     private Long id;
 
     /**
      * Descrição textual da transação.
      */
     @Schema(description = "Descrição da transação", example = "Compra no supermercado")
-    @Column(nullable = false)
+    @Column(name = "descricao", nullable = false)
     private String description;
 
     /**
@@ -49,7 +50,7 @@ public class Transaction {
      * Ex: "Alimentação", "Renda", "Entretenimento", "Transporte"
      */
     @Schema(description = "Categoria da transação", example = "Alimentação")
-    @Column(nullable = false)
+    @Column(name = "category", nullable = false)
     private String category;
 
     /**
