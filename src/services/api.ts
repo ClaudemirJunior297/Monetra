@@ -23,15 +23,11 @@ const getBaseUrl = () => {
     return envUrl.replace(/\/$/, "");
   }
 
-  // If running on web, use same-origin only when the browser is on localhost.
-  // In Codespaces/preview environments, the app origin may not host the backend.
   if (Platform.OS === "web") {
     try {
-      const { hostname, protocol, port } = window.location;
+      const { hostname } = window.location;
       if (hostname === "localhost" || hostname === "127.0.0.1" || hostname === "0.0.0.0") {
-        const portPart = port ? `:${port}` : "";
-        const url = `${protocol}//${hostname}${portPart}`;
-        return url.replace(/\/$/, "");
+        return `http://${hostname}:8080`;
       }
     } catch {
       // ignore if window is not available

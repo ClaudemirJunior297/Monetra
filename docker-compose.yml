@@ -1,0 +1,21 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: monetra-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: monetra
+      MYSQL_ROOT_PASSWORD: monetra123
+    ports:
+      - "3306:3306"
+    volumes:
+      - monetra_mysql_data:/var/lib/mysql
+      - ./backend/data/monetra.sql:/docker-entrypoint-initdb.d/01-monetra.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-pmonetra123"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  monetra_mysql_data:
