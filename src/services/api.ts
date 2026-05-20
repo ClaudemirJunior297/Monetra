@@ -1,6 +1,6 @@
+import { Transaction, TransactionPayload } from "@/types/transaction";
 import Constants from "expo-constants";
 import { Platform } from "react-native";
-import { Transaction, TransactionPayload } from "@/types/transaction";
 
 export interface User {
   id: string;
@@ -23,6 +23,22 @@ const getBaseUrl = () => {
     return envUrl.replace(/\/$/, "");
   }
 
+  // If running on web, use same-origin only when the browser is on localhost.
+  // In Codespaces/preview environments, the app origin may not host the backend.
+  if (Platform.OS === "web") {
+    try {
+      const { hostname, protocol, port } = window.location;
+      if (hostname === "localhost" || hostname === "127.0.0.1" || hostname === "0.0.0.0") {
+        const portPart = port ? `:${port}` : "";
+        const url = `${protocol}//${hostname}${portPart}`;
+        return url.replace(/\/$/, "");
+      }
+    } catch (e) {
+      // ignore if window is not available
+    }
+  }
+
+  // Default to expo host detection (useful for Expo Go) or local development
   const hostUri = Constants.expoConfig?.hostUri || Constants.manifest2?.extra?.expoGo?.debuggerHost;
   const host = hostUri?.split(":")[0];
   if (host) {
@@ -35,24 +51,38 @@ const getBaseUrl = () => {
 const API_URL = getBaseUrl();
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
-  const response = await fetch(`${API_URL}${path}`, {
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
-  });
+  let response: Response;
+  try {
+    response = await fetch(`${API_URL}${path}`, {
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...options.headers,
+      },
+    });
+  } catch (e: any) {
+    const errMsg = e && e.message ? e.message : String(e);
+    throw new Error(
+      `Falha de comunicação com o servidor. Verifique se o backend está em execução e se a URL da API está correta. (${errMsg})`
+    );
+  }
+
+  const responseText = await response.text();
+  let responseBody: any = null;
+  if (responseText) {
+    try {
+      responseBody = JSON.parse(responseText);
+    } catch {
+      responseBody = responseText;
+    }
+  }
 
   if (!response.ok) {
     let message = "Não foi possível concluir a operação.";
-    try {
-      const body = await response.json();
-      message = body.erro || body.message || message;
-    } catch {
-      const text = await response.text();
-      if (text) {
-        message = text;
-      }
+    if (responseBody && typeof responseBody === "object") {
+      message = responseBody.erro || responseBody.message || message;
+    } else if (typeof responseText === "string" && responseText.trim()) {
+      message = responseText;
     }
     throw new Error(message);
   }
@@ -61,7 +91,7 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
     return undefined as T;
   }
 
-  return response.json();
+  return responseBody as T;
 }
 
 const toApiType = (type: Transaction["type"]) => (type === "income" ? "RECEITA" : "DESPESA");

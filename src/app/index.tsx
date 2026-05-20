@@ -2,47 +2,48 @@
 
 // Importações
 import { useState } from "react";
-import { Image, StyleSheet, View, Text, ScrollView, KeyboardAvoidingView, Platform, Alert, TouchableWithoutFeedback, Keyboard } from "react-native";
+import { Alert, Image, Keyboard, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TouchableWithoutFeedback, View } from "react-native";
 
 // Navegação entre telas
 import { Link } from "expo-router";
 
 // Componentes personalizados
-import { Input } from "@/components/Input";
 import { Button } from "@/components/Button";
+import { Input } from "@/components/Input";
 
 // Contexto de autenticação
 import { useAuth } from "@/contexts/AuthContext";
 
 // Cores e estilos do projeto
-import { colors, spacing, typography } from "@/styles/theme";
+import { colors, spacing } from "@/styles/theme";
 
 // Função principal da tela de login
 export default function Login() {
-
     // Estado do e-mail
     const [email, setEmail] = useState("");
 
     // Estado da senha
     const [senha, setSenha] = useState("");
 
+    // Feedback visual
+    const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
+    const [feedbackType, setFeedbackType] = useState<'error' | 'success' | null>(null);
+
     // Função de login e loading
     const { signIn, loading } = useAuth();
 
     // Função: Validar e-mail
     const validateEmail = (email: string) => {
-
-        // Regex para validar formato do e-mail
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
         return emailRegex.test(email);
     };
 
     // Função: Fazer login
     const handleLogin = async () => {
-
         // Fecha o teclado
         Keyboard.dismiss();
+        setFeedbackMessage(null);
+        setFeedbackType(null);
 
         // Verifica campos vazios
         if (!email.trim() || !senha) {
@@ -63,34 +64,30 @@ export default function Login() {
         }
 
         try {
-
             // Faz login
             await signIn(email, senha);
-
+            setFeedbackType('success');
+            setFeedbackMessage('Login realizado com sucesso.');
         } catch (error) {
-
-            // Exibe erro
-            Alert.alert("Erro", "Falha ao fazer login. Tente novamente.");
+            const message = error instanceof Error ? error.message : String(error);
+            setFeedbackType('error');
+            setFeedbackMessage(message || 'Falha ao fazer login. Tente novamente.');
+            Alert.alert("Erro", message || "Falha ao fazer login. Tente novamente.");
         }
     };
 
     return (
-
         // Fecha teclado ao tocar fora
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-
             {/* Evita teclado cobrir os inputs */}
             <KeyboardAvoidingView
                 style={{ flex: 1 }}
                 behavior={Platform.select({ ios: "padding", android: "height" })}
             >
-
                 {/* Permite rolagem da tela */}
                 <ScrollView contentContainerStyle={styles.scrollContainer}>
-
                     {/* Container principal */}
                     <View style={styles.container}>
-
                         {/* Logo do app */}
                         <Image
                             source={require("@/assets/logo.png")}
@@ -107,7 +104,6 @@ export default function Login() {
 
                         {/* Formulário */}
                         <View style={styles.form}>
-
                             {/* Campo de e-mail */}
                             <Input
                                 placeholder="E-mail"
@@ -131,12 +127,17 @@ export default function Login() {
                                 onPress={handleLogin}
                                 disabled={loading}
                             />
+
+                            {feedbackMessage ? (
+                                <Text style={[styles.feedback, feedbackType === 'error' ? styles.errorText : styles.successText]}>
+                                    {feedbackMessage}
+                                </Text>
+                            ) : null}
                         </View>
 
                         {/* Link para cadastro */}
                         <Text style={styles.footerText}>
                             Não tem uma conta?{" "}
-
                             <Link href="/signup" style={styles.footerLink}>
                                 Cadastre-se aqui.
                             </Link>
@@ -145,7 +146,7 @@ export default function Login() {
                 </ScrollView>
             </KeyboardAvoidingView>
         </TouchableWithoutFeedback>
-    )
+    );
 }
 
 // Estilos da tela
@@ -192,6 +193,20 @@ const styles = StyleSheet.create({
     // Formulário
     form: {
         gap: spacing.md,
+    },
+
+    feedback: {
+        marginTop: spacing.sm,
+        fontSize: 14,
+        textAlign: 'center',
+    },
+
+    errorText: {
+        color: '#ff3860',
+    },
+
+    successText: {
+        color: '#00c853',
     },
 
     // Texto inferior

@@ -1,4 +1,4 @@
-// Função: Criar as abas de navegação do app
+// Funcao: Criar as abas de navegacao do app
 
 // Importa o componente de abas
 import { Tabs } from "expo-router";
@@ -6,83 +6,83 @@ import { Tabs } from "expo-router";
 // Importa as cores do projeto
 import { colors } from "@/styles/theme";
 
-// Importa os ícones
+// Importa os icones
 import { Feather } from "@expo/vector-icons";
 
-// Função principal das abas
+// Funcao principal das abas
 export default function TabLayout() {
   return (
     <>
       {/* Estrutura das abas */}
       <Tabs
         screenOptions={{
-          headerStyle: { backgroundColor: colors.card }, // Fundo do cabeçalho
-          headerTintColor: colors.white, // Cor do texto do cabeçalho
+          headerStyle: { backgroundColor: colors.card },
+          headerTintColor: colors.white,
           tabBarStyle: {
             backgroundColor: colors.card,
-            borderTopColor: colors.border
-          }, // Estilo da barra inferior
-          tabBarActiveTintColor: colors.primary, // Cor da aba ativa
-          tabBarInactiveTintColor: colors.textSecondary, // Cor da aba inativa
+            borderTopColor: colors.border,
+          },
+          tabBarActiveTintColor: colors.primary,
+          tabBarInactiveTintColor: colors.textSecondary,
         }}
       >
 
-      {/* ABA 1 - Início */}
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: "Início", // Nome da aba
-          tabBarIcon: ({ color }) => (
-            <Feather name="home" size={24} color={color} />
-          ),
-        }}
-      />
+        {/* ABA 1 - Inicio */}
+        <Tabs.Screen
+          name="index"
+          options={{
+            title: "Inicio",
+            tabBarIcon: ({ color }) => (
+              <Feather name="home" size={24} color={color} />
+            ),
+          }}
+        />
 
-      {/* ABA 2 - Transações */}
-      <Tabs.Screen
-        name="transaction"
-        options={{
-          title: "Transações", // Nome da aba
-          tabBarIcon: ({ color }) => (
-            <Feather name="list" size={24} color={color} />
-          ),
-        }}
-      />
+        {/* ABA 2 - Transacoes */}
+        <Tabs.Screen
+          name="transaction"
+          options={{
+            title: "Transacoes",
+            tabBarIcon: ({ color }) => (
+              <Feather name="list" size={24} color={color} />
+            ),
+          }}
+        />
 
-      {/* ABA 3 - Adicionar */}
-      <Tabs.Screen
-        name="add"
-        options={{
-          title: "Adicionar", // Nome da aba
-          tabBarIcon: ({ color }) => (
-            <Feather name="plus-circle" size={24} color={color} />
-          ),
-        }}
-      />
+        {/* ABA 3 - Adicionar */}
+        <Tabs.Screen
+          name="add"
+          options={{
+            title: "Adicionar",
+            tabBarIcon: ({ color }) => (
+              <Feather name="plus-circle" size={24} color={color} />
+            ),
+          }}
+        />
 
-      {/* ABA 4 - Gráficos */}
-      <Tabs.Screen
-        name="graphs"
-        options={{
-          title: "Gráficos", // Nome da aba
-          tabBarIcon: ({ color }) => (
-            <Feather name="pie-chart" size={24} color={color} />
-          ),
-        }}
-      />
+        {/* ABA 4 - Graficos */}
+        <Tabs.Screen
+          name="graphs"
+          options={{
+            title: "Graficos",
+            tabBarIcon: ({ color }) => (
+              <Feather name="pie-chart" size={24} color={color} />
+            ),
+          }}
+        />
 
-      {/* ABA 5 - Perfil */}
-      <Tabs.Screen
-        name="profile"
-        options={{
-          title: "Perfil", // Nome da aba
-          tabBarIcon: ({ color }) => (
-            <Feather name="user" size={24} color={color} />
-          ),
-        }}
-      />
+        {/* ABA 5 - Perfil */}
+        <Tabs.Screen
+          name="profile"
+          options={{
+            title: "Perfil",
+            tabBarIcon: ({ color }) => (
+              <Feather name="user" size={24} color={color} />
+            ),
+          }}
+        />
 
-    </Tabs>
+      </Tabs>
     </>
   );
 }

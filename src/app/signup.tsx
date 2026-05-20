@@ -2,20 +2,20 @@
 
 // Importações
 import { useState } from "react";
-import { Image, StyleSheet, View, Text, ScrollView, KeyboardAvoidingView, Platform, Alert, TouchableWithoutFeedback, Keyboard } from "react-native";
+import { Alert, Image, Keyboard, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TouchableWithoutFeedback, View } from "react-native";
 
 // Navegação entre telas
 import { Link } from "expo-router";
 
 // Componentes personalizados
-import { Input } from "@/components/Input";
 import { Button } from "@/components/Button";
+import { Input } from "@/components/Input";
 
 // Contexto de autenticação
 import { useAuth } from "@/contexts/AuthContext";
 
 // Cores e estilos do projeto
-import { colors, spacing, typography } from "@/styles/theme";
+import { colors, spacing } from "@/styles/theme";
 
 // Função principal da tela de cadastro
 export default function Signup() {
@@ -31,6 +31,8 @@ export default function Signup() {
 
     // Estado da confirmação da senha
     const [confirmarSenha, setConfirmarSenha] = useState("");
+    const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
+    const [feedbackType, setFeedbackType] = useState<'error' | 'success' | null>(null);
 
     // Função de cadastro e loading
     const { signUp, loading } = useAuth();
@@ -49,6 +51,8 @@ export default function Signup() {
 
         // Fecha o teclado
         Keyboard.dismiss();
+        setFeedbackMessage(null);
+        setFeedbackType(null);
 
         // Verifica campos vazios
         if (!nome.trim() || !email.trim() || !senha || !confirmarSenha) {
@@ -84,11 +88,15 @@ export default function Signup() {
 
             // Faz cadastro
             await signUp(nome, email, senha);
+            setFeedbackType('success');
+            setFeedbackMessage('Conta criada com sucesso.');
 
         } catch (error) {
 
-            // Exibe erro
-            Alert.alert("Erro", "Falha ao criar conta. Tente novamente.");
+            const message = error instanceof Error ? error.message : String(error);
+            setFeedbackType('error');
+            setFeedbackMessage(message || 'Falha ao criar conta. Tente novamente.');
+            Alert.alert("Erro", message || "Falha ao criar conta. Tente novamente.");
         }
     };
 
@@ -165,6 +173,11 @@ export default function Signup() {
                                 onPress={handleSignup}
                                 disabled={loading}
                             />
+                            {feedbackMessage ? (
+                                <Text style={[styles.feedback, feedbackType === 'error' ? styles.errorText : styles.successText]}>
+                                    {feedbackMessage}
+                                </Text>
+                            ) : null}
                         </View>
 
                         {/* Link para login */}
@@ -226,6 +239,20 @@ const styles = StyleSheet.create({
     // Formulário
     form: {
         gap: spacing.md,
+    },
+
+    feedback: {
+        marginTop: spacing.sm,
+        fontSize: 14,
+        textAlign: 'center',
+    },
+
+    errorText: {
+        color: '#ff3860',
+    },
+
+    successText: {
+        color: '#00c853',
     },
 
     // Texto inferior
