@@ -24,9 +24,6 @@ import com.monetra.service.TransactionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -46,12 +43,11 @@ import java.util.Optional;
 @Tag(name = "Transactions", description = "API para gerenciamento de transações financeiras")
 public class TransactionController {
 
-    /**
-     * Injeção de dependência do TransactionService.
-     * @Autowired permite que o Spring Container injete automaticamente uma instância do serviço.
-     */
-    @Autowired
-    private TransactionService transactionService;
+    private final TransactionService transactionService;
+
+    public TransactionController(TransactionService transactionService) {
+        this.transactionService = transactionService;
+    }
 
     // =====================================================
     // ENDPOINTS CRUD

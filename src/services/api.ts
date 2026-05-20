@@ -33,7 +33,7 @@ const getBaseUrl = () => {
         const url = `${protocol}//${hostname}${portPart}`;
         return url.replace(/\/$/, "");
       }
-    } catch (e) {
+    } catch {
       // ignore if window is not available
     }
   }

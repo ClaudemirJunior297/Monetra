@@ -24,4 +24,6 @@ dependency-reduced-pom.xml
 # Application
 *.log
 logs/
-data/
+data/*
+!data/
+!data/monetra.sql

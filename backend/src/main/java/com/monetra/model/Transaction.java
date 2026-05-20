@@ -58,7 +58,7 @@ public class Transaction {
      * Sempre deve ser um valor positivo (validação no serviço).
      */
     @Schema(description = "Valor da transação", example = "150.50")
-    @Column(nullable = false)
+    @Column(name = "valor", nullable = false)
     private Double amount;
 
     /**
@@ -67,7 +67,7 @@ public class Transaction {
      * DESPESA: saída de dinheiro (compras, mensalidades)
      */
     @Schema(description = "Tipo de transação", example = "DESPESA", allowableValues = {"RECEITA", "DESPESA"})
-    @Column(nullable = false)
+    @Column(name = "tipo", nullable = false)
     private String type;
 
     /**
@@ -75,7 +75,7 @@ public class Transaction {
      * Definida automaticamente ao criar a transação (LocalDateTime.now())
      */
     @Schema(description = "Data e hora da transação")
-    @Column(nullable = false)
+    @Column(name = "data_transacao", nullable = false)
     private LocalDateTime date;
 
     // =====================================================

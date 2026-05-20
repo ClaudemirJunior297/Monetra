@@ -1,4 +1,3 @@
--- Schema initialization baseado no arquivo monetra.sql
 SET MODE MySQL;
 
 CREATE TABLE IF NOT EXISTS usuario (
@@ -12,7 +11,7 @@ CREATE TABLE IF NOT EXISTS usuario (
 
 CREATE TABLE IF NOT EXISTS saldo_resumo_financeiro (
   id_resumo INT AUTO_INCREMENT PRIMARY KEY,
-  id_usuario INT NOT NULL,
+  id_usuario INT NOT NULL UNIQUE,
   saldo_atual DECIMAL(10,2) DEFAULT 0.00,
   CONSTRAINT fk_saldo_usuario FOREIGN KEY (id_usuario) REFERENCES usuario(id_usuario) ON DELETE CASCADE
 );
@@ -39,6 +38,6 @@ CREATE TABLE IF NOT EXISTS transacao (
   descricao VARCHAR(255) NOT NULL,
   category VARCHAR(50) NOT NULL,
   valor DECIMAL(10,2) NOT NULL,
-  data_transacao DATE NOT NULL,
+  data_transacao TIMESTAMP NOT NULL,
   tipo VARCHAR(20) NOT NULL
 );

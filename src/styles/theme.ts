@@ -4,13 +4,11 @@
 export const colors = {
   // CORES PRINCIPAIS
   primary: "#00C853",      // Verde Principal - usado em botões e destaques
-  primaryDark: "#009624",  // Verde Escuro - para efeitos de hover/ativo
   background: "#121212",   // Preto / Fundo - cor de fundo de todas as telas
   
   // CORES DE APOIO (cada uma com uma função específica)
   expense: "#FF5252",      // Vermelho - para despesas/gastos (valores negativos)
   alert: "#FFD600",        // Amarelo - para alertas e avisos
-  info: "#2979FF",         // Azul - para informações (ex: dicas, ajuda)
   category: "#B388FF",     // Roxo - usado nos gráficos de categorias
   success: "#00BFA5",      // Verde água - para receitas/valores positivos
   
