@@ -1,0 +1,22 @@
+╔═══════════════════════════════════════════════════════════════╗
+║                                                               ║
+║     ███╗   ███╗ ██████╗ ███╗   ██╗███████╗████████╗██████╗   ║
+║     ████╗ ████║██╔═══██╗████╗  ██║██╔════╝╚══██╔══╝██╔══██╗  ║
+║     ██╔████╔██║██║   ██║██╔██╗ ██║█████╗     ██║   ██████╔╝  ║
+║     ██║╚██╔╝██║██║   ██║██║╚██╗██║██╔══╝     ██║   ██╔══██╗  ║
+║     ██║ ╚═╝ ██║╚██████╔╝██║ ╚████║███████╗   ██║   ██║  ██║  ║
+║     ╚═╝     ╚═╝ ╚═════╝ ╚═╝  ╚═══╝╚══════╝   ╚═╝   ╚═╝  ╚═╝  ║
+║                                                               ║
+║              API MONETRA - Controle Financeiro                ║
+║                      ${application.formatted-version}                     ║
+║                                                               ║
+║  Servidor iniciado com sucesso! 🚀                            ║
+║                                                               ║
+║  📍 API: http://localhost:${server.port}                     ║
+║  📍 Swagger: http://localhost:${server.port}/swagger-ui.html ║
+║  📍 Health: http://localhost:${server.port}/api/health       ║
+║                                                               ║
+║  🌟 Perfil ativo: ${spring.profiles.active}                  ║
+║  🗄️  Banco: ${spring.datasource.url}                         ║
+║                                                               ║
+╚═══════════════════════════════════════════════════════════════╝

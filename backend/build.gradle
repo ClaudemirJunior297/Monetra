@@ -1,0 +1,138 @@
+/**
+ * ============================================================================
+ * BUILD.GRADLE - Configuração de dependências do projeto
+ * ============================================================================
+ * 
+ * Este arquivo define todas as dependências e plugins necessários
+ * para compilar e executar a API Monetra.
+ * 
+ * @author Monetra Team
+ * @version 1.0.0
+ * ============================================================================
+ */
+
+plugins {
+    // Plugin Spring Boot - Gerencia versões e tarefas
+    id 'java'
+    id 'org.springframework.boot' version '3.1.5'
+    id 'io.spring.dependency-management' version '1.1.3'
+}
+
+// ============================================================================
+// INFORMAÇÕES DO PROJETO
+// ============================================================================
+group = 'com.monetra'
+version = '1.0.0'
+
+// ============================================================================
+// CONFIGURAÇÕES JAVA
+// ============================================================================
+java {
+    sourceCompatibility = '17'  // Versão do Java (Spring Boot 3.x requer Java 17+)
+    targetCompatibility = '17'
+}
+
+// ============================================================================
+// REPOSITÓRIOS DE DEPENDÊNCIAS
+// ============================================================================
+repositories {
+    mavenCentral()  // Repositório principal do Maven
+    // maven { url 'https://repo.spring.io/milestone' }  // Para versões milestone (se necessário)
+}
+
+// ============================================================================
+// DEPENDÊNCIAS DO PROJETO
+// ============================================================================
+dependencies {
+    
+    // ========================================================================
+    // SPRING BOOT STARTERS (Core)
+    // ========================================================================
+    
+    // Spring Boot Web - API REST, Tomcat embutido
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    
+    // Spring Boot Data JPA - Persistência com Hibernate
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    
+    // Spring Boot Validation - Validação de dados (@Valid, @NotBlank, etc.)
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    
+    // Spring Boot Security - Autenticação e autorização (BCrypt)
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    
+    // ========================================================================
+    // DOCUMENTAÇÃO DA API (Swagger/OpenAPI)
+    // ========================================================================
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0'
+    
+    // ========================================================================
+    // UTILITÁRIOS
+    // ========================================================================
+    // Apache Commons Lang3 - Utilitários para String, números, datas
+    implementation 'org.apache.commons:commons-lang3:3.12.0'
+    
+    // ========================================================================
+    // BANCO DE DADOS
+    // ========================================================================
+    
+    // PostgreSQL - Banco de dados de produção
+    runtimeOnly 'org.postgresql:postgresql'
+    
+    // H2 Database - Banco em memória para desenvolvimento/testes
+    runtimeOnly 'com.h2database:h2'
+    
+    // ========================================================================
+    // MIGRAÇÕES DE BANCO (Flyway - opcional)
+    // ========================================================================
+    // implementation 'org.flywaydb:flyway-core'
+    
+    // ========================================================================
+    // MONITORAMENTO (Spring Boot Actuator - opcional)
+    // ========================================================================
+    // implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    
+    // ========================================================================
+    // TESTES
+    // ========================================================================
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.security:spring-security-test'
+}
+
+// ============================================================================
+// CONFIGURAÇÕES DE TESTES
+// ============================================================================
+tasks.named('test') {
+    useJUnitPlatform()  // Usa JUnit 5 para execução de testes
+    testLogging {
+        events "passed", "skipped", "failed"
+        exceptionFormat "full"
+    }
+}
+
+// ============================================================================
+// CONFIGURAÇÕES DO BOOT JAR
+// ============================================================================
+bootJar {
+    archiveFileName = "monetra-api-${version}.jar"
+    manifest {
+        attributes 'Implementation-Title': 'Monetra API',
+                   'Implementation-Version': archiveVersion,
+                   'Built-By': System.getProperty('user.name'),
+                   'Build-Date': new Date().format('yyyy-MM-dd HH:mm:ss')
+    }
+}
+
+// ============================================================================
+// TAREFA CUSTOMIZADA PARA EXIBIR INFORMAÇÕES DO PROJETO
+// ============================================================================
+task info {
+    doLast {
+        println "========================================"
+        println "  Projeto: Monetra API"
+        println "  Versão: ${version}"
+        println "  Java: ${sourceCompatibility}"
+        println "  Grupo: ${group}"
+        println "========================================"
+    }
+}

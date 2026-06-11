@@ -1,0 +1,25 @@
+/**
+ * ============================================================================
+ * SETTINGS.GRADLE - Configurações do projeto Gradle
+ * ============================================================================
+ * 
+ * Este arquivo define o nome do projeto e configurações do build.
+ * 
+ * @author Monetra Team
+ * @version 1.0.0
+ * ============================================================================
+ */
+
+// Nome do projeto raiz
+rootProject.name = 'monetra-api'
+
+// Opcional: Adicionar módulos se o projeto for multi-módulo
+// include 'module1', 'module2'
+
+// Opcional: Configurar repositórios de plugins
+// pluginManagement {
+//     repositories {
+//         gradlePluginPortal()
+//         mavenCentral()
+//     }
+// }
