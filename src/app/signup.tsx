@@ -1,11 +1,12 @@
 /**
  * ============================================================================
- * TELA DE CADASTRO - Signup
+ * TELA DE CADASTRO - Com logo personalizada
  * ============================================================================
  */
 
 import { useState, useEffect } from "react";
 import {
+  Image,
   StyleSheet,
   View,
   Text,
@@ -131,13 +132,14 @@ export default function Signup() {
       >
         <ScrollView contentContainerStyle={styles.scrollContainer}>
           <View style={styles.container}>
-            {/* LOGO */}
-            <View style={styles.logoContainer}>
-              <View style={styles.logoCircle}>
-                <Text style={styles.logoText}>M</Text>
-              </View>
-            </View>
+            {/* LOGO - IMAGEM PERSONALIZADA */}
+            <Image 
+              source={require("@/assets/logo.png")}  // 👈 CAMINHO DA SUA LOGO
+              style={styles.logo}
+              resizeMode="contain"
+            />
 
+            {/* TÍTULO (opcional) */}
             <Text style={styles.title}>Criar Conta</Text>
             <Text style={styles.subtitle}>Comece a controlar seus gastos hoje</Text>
 
@@ -210,32 +212,20 @@ const getStyles = () =>
       padding: 32,
       justifyContent: "center",
     },
-    logoContainer: {
-      alignItems: "center",
+    logo: {
+      width: "100%",
+      height: 120,        // 👈 AJUSTE A ALTURA
       marginBottom: 24,
     },
-    logoCircle: {
-      width: 80,
-      height: 80,
-      borderRadius: 40,
-      backgroundColor: COLORS.primary,
-      alignItems: "center",
-      justifyContent: "center",
-    },
-    logoText: {
-      fontSize: 48,
-      fontWeight: "bold",
-      color: COLORS.text,
-    },
     title: {
-      fontSize: 32,
+      fontSize: 28,
       fontWeight: "900",
       color: COLORS.text,
       textAlign: "center",
       marginBottom: 8,
     },
     subtitle: {
-      fontSize: 16,
+      fontSize: 14,
       color: COLORS.textSecondary,
       textAlign: "center",
       marginBottom: 32,

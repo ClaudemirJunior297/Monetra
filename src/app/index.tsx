@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * TELA DE LOGIN - Versão sem dependência de tema (cores fixas)
+ * TELA DE LOGIN - Com logo personalizada
  * ============================================================================
  */
 
@@ -21,14 +21,12 @@ import { Input } from "@/components/Input";
 import { Button } from "@/components/Button";
 import { useAuth } from "@/contexts/AuthContext";
 
-// Cores fixas (não dependem do tema)
+// Cores fixas
 const COLORS = {
   background: "#121212",
-  card: "#1E1E2E",
   primary: "#002ce8",
   text: "#FFFFFF",
   textSecondary: "#888888",
-  border: "#2A2A3A",
 };
 
 export default function Login() {
@@ -41,23 +39,30 @@ export default function Login() {
   const [touchedEmail, setTouchedEmail] = useState(false);
   const [touchedPassword, setTouchedPassword] = useState(false);
 
-  // Validações em tempo real
+  // Validações
   useEffect(() => {
-    if (touchedEmail && email) {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      setEmailError(emailRegex.test(email) ? "" : "E-mail inválido");
-    } else if (touchedEmail && !email) {
-      setEmailError("E-mail é obrigatório");
+    if (touchedEmail) {
+      if (!email) {
+        setEmailError("E-mail é obrigatório");
+      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        setEmailError("E-mail inválido");
+      } else {
+        setEmailError("");
+      }
     } else {
       setEmailError("");
     }
   }, [email, touchedEmail]);
 
   useEffect(() => {
-    if (touchedPassword && password) {
-      setPasswordError(password.length < 6 ? "Senha deve ter pelo menos 6 caracteres" : "");
-    } else if (touchedPassword && !password) {
-      setPasswordError("Senha é obrigatória");
+    if (touchedPassword) {
+      if (!password) {
+        setPasswordError("Senha é obrigatória");
+      } else if (password.length < 6) {
+        setPasswordError("Senha deve ter pelo menos 6 caracteres");
+      } else {
+        setPasswordError("");
+      }
     } else {
       setPasswordError("");
     }
@@ -75,7 +80,7 @@ export default function Login() {
       await signIn(email, password);
       router.replace("/(tabs)");
     } catch (err) {
-      // Erro já tratado no contexto
+      console.log(err);
     }
   };
 
@@ -89,14 +94,14 @@ export default function Login() {
       >
         <ScrollView contentContainerStyle={styles.scrollContainer}>
           <View style={styles.container}>
-            {/* LOGO */}
-            <View style={styles.logoContainer}>
-              <View style={styles.logoCircle}>
-                <Text style={styles.logoText}>M</Text>
-              </View>
-            </View>
+            {/* LOGO - IMAGEM PERSONALIZADA */}
+            <Image 
+              source={require("@/assets/logo.png")}  // 👈 CAMINHO DA SUA LOGO
+              style={styles.logo}
+              resizeMode="contain"
+            />
 
-            {/* TÍTULO */}
+            {/* TÍTULO (opcional - pode remover se a logo já tiver o nome) */}
             <Text style={styles.title}>Monetra</Text>
             <Text style={styles.subtitle}>Gerencie suas finanças de forma inteligente</Text>
 
@@ -124,7 +129,7 @@ export default function Login() {
               <Button
                 label={loading ? "Entrando..." : "Entrar"}
                 onPress={handleLogin}
-                disabled={loading}
+                loading={loading}
               />
             </View>
 
@@ -153,32 +158,20 @@ const getStyles = () =>
       padding: 32,
       justifyContent: "center",
     },
-    logoContainer: {
-      alignItems: "center",
+    logo: {
+      width: "100%",
+      height: 120,        // 👈 AJUSTE A ALTURA DA SUA LOGO
       marginBottom: 24,
     },
-    logoCircle: {
-      width: 80,
-      height: 80,
-      borderRadius: 40,
-      backgroundColor: COLORS.primary,
-      alignItems: "center",
-      justifyContent: "center",
-    },
-    logoText: {
-      fontSize: 48,
-      fontWeight: "bold",
-      color: COLORS.text,
-    },
     title: {
-      fontSize: 42,
+      fontSize: 32,
       fontWeight: "900",
       color: COLORS.primary,
       textAlign: "center",
       marginBottom: 8,
     },
     subtitle: {
-      fontSize: 16,
+      fontSize: 14,
       color: COLORS.textSecondary,
       textAlign: "center",
       marginBottom: 32,
