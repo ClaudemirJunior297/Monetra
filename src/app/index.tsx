@@ -1,224 +1,198 @@
-// Função: Tela de login do aplicativo
+/**
+ * ============================================================================
+ * TELA DE LOGIN - Versão sem dependência de tema (cores fixas)
+ * ============================================================================
+ */
 
-// Importações
-import { useState } from "react";
-import { Alert, Image, Keyboard, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TouchableWithoutFeedback, View } from "react-native";
-
-// Navegação entre telas
-import { Link } from "expo-router";
-
-// Componentes personalizados
-import { Button } from "@/components/Button";
+import { useState, useEffect } from "react";
+import {
+  Image,
+  StyleSheet,
+  View,
+  Text,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  TouchableWithoutFeedback,
+  Keyboard,
+} from "react-native";
+import { Link, router } from "expo-router";
 import { Input } from "@/components/Input";
-
-// Contexto de autenticação
+import { Button } from "@/components/Button";
 import { useAuth } from "@/contexts/AuthContext";
 
-// Cores e estilos do projeto
-import { colors, spacing } from "@/styles/theme";
+// Cores fixas (não dependem do tema)
+const COLORS = {
+  background: "#121212",
+  card: "#1E1E2E",
+  primary: "#002ce8",
+  text: "#FFFFFF",
+  textSecondary: "#888888",
+  border: "#2A2A3A",
+};
 
-// Função principal da tela de login
 export default function Login() {
-    // Estado do e-mail
-    const [email, setEmail] = useState("");
+  const { signIn, loading } = useAuth();
 
-    // Estado da senha
-    const [senha, setSenha] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [emailError, setEmailError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [touchedEmail, setTouchedEmail] = useState(false);
+  const [touchedPassword, setTouchedPassword] = useState(false);
 
-    // Feedback visual
-    const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
-    const [feedbackType, setFeedbackType] = useState<'error' | 'success' | null>(null);
+  // Validações em tempo real
+  useEffect(() => {
+    if (touchedEmail && email) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      setEmailError(emailRegex.test(email) ? "" : "E-mail inválido");
+    } else if (touchedEmail && !email) {
+      setEmailError("E-mail é obrigatório");
+    } else {
+      setEmailError("");
+    }
+  }, [email, touchedEmail]);
 
-    // Função de login e loading
-    const { signIn, loading } = useAuth();
+  useEffect(() => {
+    if (touchedPassword && password) {
+      setPasswordError(password.length < 6 ? "Senha deve ter pelo menos 6 caracteres" : "");
+    } else if (touchedPassword && !password) {
+      setPasswordError("Senha é obrigatória");
+    } else {
+      setPasswordError("");
+    }
+  }, [password, touchedPassword]);
 
-    // Função: Validar e-mail
-    const validateEmail = (email: string) => {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return emailRegex.test(email);
-    };
+  const handleLogin = async () => {
+    setTouchedEmail(true);
+    setTouchedPassword(true);
+    Keyboard.dismiss();
 
-    // Função: Fazer login
-    const handleLogin = async () => {
-        // Fecha o teclado
-        Keyboard.dismiss();
-        setFeedbackMessage(null);
-        setFeedbackType(null);
+    if (!email || !password) return;
+    if (emailError || passwordError) return;
 
-        // Verifica campos vazios
-        if (!email.trim() || !senha) {
-            Alert.alert("Erro", "Por favor, preencha todos os campos");
-            return;
-        }
+    try {
+      await signIn(email, password);
+      router.replace("/(tabs)");
+    } catch (err) {
+      // Erro já tratado no contexto
+    }
+  };
 
-        // Verifica se o e-mail é válido
-        if (!validateEmail(email)) {
-            Alert.alert("Erro", "Por favor, insira um e-mail válido");
-            return;
-        }
+  const styles = getStyles();
 
-        // Verifica tamanho mínimo da senha
-        if (senha.length < 6) {
-            Alert.alert("Erro", "A senha deve ter pelo menos 6 caracteres");
-            return;
-        }
+  return (
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.select({ ios: "padding", android: "height" })}
+      >
+        <ScrollView contentContainerStyle={styles.scrollContainer}>
+          <View style={styles.container}>
+            {/* LOGO */}
+            <View style={styles.logoContainer}>
+              <View style={styles.logoCircle}>
+                <Text style={styles.logoText}>M</Text>
+              </View>
+            </View>
 
-        try {
-            // Faz login
-            await signIn(email, senha);
-            setFeedbackType('success');
-            setFeedbackMessage('Login realizado com sucesso.');
-        } catch (error) {
-            const message = error instanceof Error ? error.message : String(error);
-            setFeedbackType('error');
-            setFeedbackMessage(message || 'Falha ao fazer login. Tente novamente.');
-            Alert.alert("Erro", message || "Falha ao fazer login. Tente novamente.");
-        }
-    };
+            {/* TÍTULO */}
+            <Text style={styles.title}>Monetra</Text>
+            <Text style={styles.subtitle}>Gerencie suas finanças de forma inteligente</Text>
 
-    return (
-        // Fecha teclado ao tocar fora
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-            {/* Evita teclado cobrir os inputs */}
-            <KeyboardAvoidingView
-                style={{ flex: 1 }}
-                behavior={Platform.select({ ios: "padding", android: "height" })}
-            >
-                {/* Permite rolagem da tela */}
-                <ScrollView contentContainerStyle={styles.scrollContainer}>
-                    {/* Container principal */}
-                    <View style={styles.container}>
-                        {/* Logo do app */}
-                        <Image
-                            source={require("@/assets/logo.png")}
-                            style={styles.illustration}
-                        />
+            {/* FORMULÁRIO */}
+            <View style={styles.form}>
+              <Input
+                placeholder="E-mail"
+                keyboardType="email-address"
+                value={email}
+                onChangeText={setEmail}
+                onFocus={() => setTouchedEmail(true)}
+                autoCapitalize="none"
+                error={emailError}
+              />
 
-                        {/* Título */}
-                        <Text style={styles.title}>Monetra</Text>
+              <Input
+                placeholder="Senha"
+                secureTextEntry
+                value={password}
+                onChangeText={setPassword}
+                onFocus={() => setTouchedPassword(true)}
+                error={passwordError}
+              />
 
-                        {/* Subtítulo */}
-                        <Text style={styles.subtitle}>
-                            Gerencie suas finanças de forma inteligente
-                        </Text>
+              <Button
+                label={loading ? "Entrando..." : "Entrar"}
+                onPress={handleLogin}
+                disabled={loading}
+              />
+            </View>
 
-                        {/* Formulário */}
-                        <View style={styles.form}>
-                            {/* Campo de e-mail */}
-                            <Input
-                                placeholder="E-mail"
-                                keyboardType="email-address"
-                                value={email}
-                                onChangeText={setEmail}
-                                autoCapitalize="none"
-                            />
-
-                            {/* Campo de senha */}
-                            <Input
-                                placeholder="Senha"
-                                secureTextEntry
-                                value={senha}
-                                onChangeText={setSenha}
-                            />
-
-                            {/* Botão de login */}
-                            <Button
-                                label={loading ? "Entrando..." : "Entrar"}
-                                onPress={handleLogin}
-                                disabled={loading}
-                            />
-
-                            {feedbackMessage ? (
-                                <Text style={[styles.feedback, feedbackType === 'error' ? styles.errorText : styles.successText]}>
-                                    {feedbackMessage}
-                                </Text>
-                            ) : null}
-                        </View>
-
-                        {/* Link para cadastro */}
-                        <Text style={styles.footerText}>
-                            Não tem uma conta?{" "}
-                            <Link href="/signup" style={styles.footerLink}>
-                                Cadastre-se aqui.
-                            </Link>
-                        </Text>
-                    </View>
-                </ScrollView>
-            </KeyboardAvoidingView>
-        </TouchableWithoutFeedback>
-    );
+            {/* LINK PARA CADASTRO */}
+            <Text style={styles.footerText}>
+              Não tem uma conta?{" "}
+              <Link href="/signup" style={styles.footerLink}>
+                Cadastre-se aqui.
+              </Link>
+            </Text>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </TouchableWithoutFeedback>
+  );
 }
 
-// Estilos da tela
-const styles = StyleSheet.create({
-
-    // ScrollView
+const getStyles = () =>
+  StyleSheet.create({
     scrollContainer: {
-        flexGrow: 1,
+      flexGrow: 1,
     },
-
-    // Container principal
     container: {
-        flex: 1,
-        backgroundColor: colors.background,
-        padding: spacing.xl,
-        justifyContent: "center",
+      flex: 1,
+      backgroundColor: COLORS.background,
+      padding: 32,
+      justifyContent: "center",
     },
-
-    // Logo
-    illustration: {
-        width: "100%",
-        height: 200,
-        resizeMode: "contain",
-        marginBottom: spacing.lg,
+    logoContainer: {
+      alignItems: "center",
+      marginBottom: 24,
     },
-
-    // Título
+    logoCircle: {
+      width: 80,
+      height: 80,
+      borderRadius: 40,
+      backgroundColor: COLORS.primary,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    logoText: {
+      fontSize: 48,
+      fontWeight: "bold",
+      color: COLORS.text,
+    },
     title: {
-        fontSize: 40,
-        fontWeight: "900",
-        color: colors.primary,
-        textAlign: "center",
-        marginBottom: spacing.sm,
+      fontSize: 42,
+      fontWeight: "900",
+      color: COLORS.primary,
+      textAlign: "center",
+      marginBottom: 8,
     },
-
-    // Subtítulo
     subtitle: {
-        fontSize: 16,
-        color: colors.textSecondary,
-        textAlign: "center",
-        marginBottom: spacing.xl,
+      fontSize: 16,
+      color: COLORS.textSecondary,
+      textAlign: "center",
+      marginBottom: 32,
     },
-
-    // Formulário
     form: {
-        gap: spacing.md,
+      gap: 16,
     },
-
-    feedback: {
-        marginTop: spacing.sm,
-        fontSize: 14,
-        textAlign: 'center',
-    },
-
-    errorText: {
-        color: '#ff3860',
-    },
-
-    successText: {
-        color: '#00c853',
-    },
-
-    // Texto inferior
     footerText: {
-        textAlign: "center",
-        marginTop: spacing.lg,
-        color: colors.textSecondary,
+      textAlign: "center",
+      marginTop: 24,
+      color: COLORS.textSecondary,
     },
-
-    // Link de cadastro
     footerLink: {
-        color: colors.primary,
-        fontWeight: "700",
+      color: COLORS.primary,
+      fontWeight: "700",
     },
-})
+  });

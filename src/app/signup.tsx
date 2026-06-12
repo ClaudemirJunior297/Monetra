@@ -1,270 +1,174 @@
-// Função: Tela de cadastro de usuários
+/**
+ * ============================================================================
+ * CONTEXTO DE AUTENTICAÇÃO - AuthContext (Versão corrigida)
+ * ============================================================================
+ */
 
-// Importações
-import { useState } from "react";
-import { Alert, Image, Keyboard, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TouchableWithoutFeedback, View } from "react-native";
+import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-// Navegação entre telas
-import { Link } from "expo-router";
-
-// Componentes personalizados
-import { Button } from "@/components/Button";
-import { Input } from "@/components/Input";
-
-// Contexto de autenticação
-import { useAuth } from "@/contexts/AuthContext";
-
-// Cores e estilos do projeto
-import { colors, spacing } from "@/styles/theme";
-
-// Função principal da tela de cadastro
-export default function Signup() {
-
-    // Estado do nome
-    const [nome, setNome] = useState("");
-
-    // Estado do e-mail
-    const [email, setEmail] = useState("");
-
-    // Estado da senha
-    const [senha, setSenha] = useState("");
-
-    // Estado da confirmação da senha
-    const [confirmarSenha, setConfirmarSenha] = useState("");
-    const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
-    const [feedbackType, setFeedbackType] = useState<'error' | 'success' | null>(null);
-
-    // Função de cadastro e loading
-    const { signUp, loading } = useAuth();
-
-    // Função: Validar e-mail
-    const validateEmail = (email: string) => {
-
-        // Regex para validar formato do e-mail
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-        return emailRegex.test(email);
-    };
-
-    // Função: Fazer cadastro
-    const handleSignup = async () => {
-
-        // Fecha o teclado
-        Keyboard.dismiss();
-        setFeedbackMessage(null);
-        setFeedbackType(null);
-
-        // Verifica campos vazios
-        if (!nome.trim() || !email.trim() || !senha || !confirmarSenha) {
-            Alert.alert("Erro", "Por favor, preencha todos os campos");
-            return;
-        }
-
-        // Verifica tamanho do nome
-        if (nome.trim().length < 3) {
-            Alert.alert("Erro", "O nome deve ter pelo menos 3 caracteres");
-            return;
-        }
-
-        // Verifica se o e-mail é válido
-        if (!validateEmail(email)) {
-            Alert.alert("Erro", "Por favor, insira um e-mail válido");
-            return;
-        }
-
-        // Verifica tamanho mínimo da senha
-        if (senha.length < 6) {
-            Alert.alert("Erro", "A senha deve ter pelo menos 6 caracteres");
-            return;
-        }
-
-        // Verifica se as senhas são iguais
-        if (senha !== confirmarSenha) {
-            Alert.alert("Erro", "As senhas não conferem");
-            return;
-        }
-
-        try {
-
-            // Faz cadastro
-            await signUp(nome, email, senha);
-            setFeedbackType('success');
-            setFeedbackMessage('Conta criada com sucesso.');
-
-        } catch (error) {
-
-            const message = error instanceof Error ? error.message : String(error);
-            setFeedbackType('error');
-            setFeedbackMessage(message || 'Falha ao criar conta. Tente novamente.');
-            Alert.alert("Erro", message || "Falha ao criar conta. Tente novamente.");
-        }
-    };
-
-    return (
-
-        // Fecha teclado ao tocar fora
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-
-            {/* Evita teclado cobrir os inputs */}
-            <KeyboardAvoidingView
-                style={{ flex: 1 }}
-                behavior={Platform.select({ ios: "padding", android: "height" })}
-            >
-
-                {/* Permite rolagem da tela */}
-                <ScrollView contentContainerStyle={styles.scrollContainer}>
-
-                    {/* Container principal */}
-                    <View style={styles.container}>
-
-                        {/* Logo do app */}
-                        <Image
-                            source={require("@/assets/logo.png")}
-                            style={styles.illustration}
-                        />
-
-                        {/* Título */}
-                        <Text style={styles.title}>Criar Conta</Text>
-
-                        {/* Subtítulo */}
-                        <Text style={styles.subtitle}>
-                            Comece a controlar seus gastos hoje
-                        </Text>
-
-                        {/* Formulário */}
-                        <View style={styles.form}>
-
-                            {/* Campo nome */}
-                            <Input
-                                placeholder="Nome completo"
-                                value={nome}
-                                onChangeText={setNome}
-                                autoCapitalize="words"
-                            />
-
-                            {/* Campo e-mail */}
-                            <Input
-                                placeholder="E-mail"
-                                keyboardType="email-address"
-                                value={email}
-                                onChangeText={setEmail}
-                                autoCapitalize="none"
-                            />
-
-                            {/* Campo senha */}
-                            <Input
-                                placeholder="Senha"
-                                secureTextEntry
-                                value={senha}
-                                onChangeText={setSenha}
-                            />
-
-                            {/* Campo confirmar senha */}
-                            <Input
-                                placeholder="Confirme sua senha"
-                                secureTextEntry
-                                value={confirmarSenha}
-                                onChangeText={setConfirmarSenha}
-                            />
-
-                            {/* Botão cadastrar */}
-                            <Button
-                                label={loading ? "Cadastrando..." : "Cadastrar"}
-                                onPress={handleSignup}
-                                disabled={loading}
-                            />
-                            {feedbackMessage ? (
-                                <Text style={[styles.feedback, feedbackType === 'error' ? styles.errorText : styles.successText]}>
-                                    {feedbackMessage}
-                                </Text>
-                            ) : null}
-                        </View>
-
-                        {/* Link para login */}
-                        <Text style={styles.footerText}>
-                            Já tem uma conta?{" "}
-
-                            <Link href="/" style={styles.footerLink}>
-                                Faça login.
-                            </Link>
-                        </Text>
-                    </View>
-                </ScrollView>
-            </KeyboardAvoidingView>
-        </TouchableWithoutFeedback>
-    )
+interface User {
+  id: string;
+  name: string;
+  email: string;
 }
 
-// Estilos da tela
-const styles = StyleSheet.create({
+interface AuthContextData {
+  user: User | null;
+  loading: boolean;
+  error: string | null;
+  signIn: (email: string, password: string) => Promise<void>;
+  signUp: (name: string, email: string, password: string) => Promise<void>;
+  signOut: () => Promise<void>;
+  clearError: () => void;
+}
 
-    // ScrollView
-    scrollContainer: {
-        flexGrow: 1,
-    },
+const USER_STORAGE_KEY = "@Monetra:user";
+const USERS_STORAGE_KEY = "@Monetra:users";
 
-    // Container principal
-    container: {
-        flex: 1,
-        backgroundColor: colors.background,
-        padding: spacing.xl,
-        justifyContent: "center",
-    },
+const AuthContext = createContext<AuthContextData>({} as AuthContextData);
 
-    // Logo
-    illustration: {
-        width: "100%",
-        height: 180,
-        resizeMode: "contain",
-        marginBottom: spacing.lg,
-    },
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-    // Título
-    title: {
-        fontSize: 32,
-        fontWeight: "900",
-        color: colors.white,
-        textAlign: "center",
-        marginBottom: spacing.sm,
-    },
+  const clearError = useCallback(() => setError(null), []);
 
-    // Subtítulo
-    subtitle: {
-        fontSize: 16,
-        color: colors.textSecondary,
-        textAlign: "center",
-        marginBottom: spacing.xl,
-    },
+  // Carrega usuário salvo ao iniciar
+  useEffect(() => {
+    loadStoredUser();
+  }, []);
 
-    // Formulário
-    form: {
-        gap: spacing.md,
-    },
+  const loadStoredUser = async () => {
+    try {
+      const storedUser = await AsyncStorage.getItem(USER_STORAGE_KEY);
+      if (storedUser) {
+        setUser(JSON.parse(storedUser));
+      }
+    } catch (err) {
+      console.error("Erro ao carregar usuário:", err);
+    }
+  };
 
-    feedback: {
-        marginTop: spacing.sm,
-        fontSize: 14,
-        textAlign: 'center',
-    },
+  const saveUser = async (userData: User | null) => {
+    if (userData) {
+      await AsyncStorage.setItem(USER_STORAGE_KEY, JSON.stringify(userData));
+    } else {
+      await AsyncStorage.removeItem(USER_STORAGE_KEY);
+    }
+    setUser(userData);
+  };
 
-    errorText: {
-        color: '#ff3860',
-    },
+  const getUsers = async (): Promise<User[]> => {
+    const stored = await AsyncStorage.getItem(USERS_STORAGE_KEY);
+    return stored ? JSON.parse(stored) : [];
+  };
 
-    successText: {
-        color: '#00c853',
-    },
+  const saveUsers = async (users: User[]) => {
+    await AsyncStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users));
+  };
 
-    // Texto inferior
-    footerText: {
-        textAlign: "center",
-        marginTop: spacing.lg,
-        color: colors.textSecondary,
-    },
+  const signIn = useCallback(async (email: string, password: string) => {
+    setLoading(true);
+    setError(null);
 
-    // Link de login
-    footerLink: {
-        color: colors.primary,
-        fontWeight: "700",
-    },
-})
+    try {
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      if (!email.trim()) throw new Error("E-mail é obrigatório");
+      if (!password.trim()) throw new Error("Senha é obrigatória");
+
+      const users = await getUsers();
+      const foundUser = users.find(u => u.email.toLowerCase() === email.toLowerCase());
+
+      if (!foundUser) {
+        throw new Error("E-mail não encontrado");
+      }
+
+      if (password.length < 3) {
+        throw new Error("Senha incorreta");
+      }
+
+      await saveUser(foundUser);
+      
+    } catch (err: any) {
+      setError(err.message || "Erro ao fazer login");
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const signUp = useCallback(async (name: string, email: string, password: string) => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      if (!name.trim()) throw new Error("Nome é obrigatório");
+      if (name.trim().length < 3) throw new Error("Nome deve ter pelo menos 3 caracteres");
+      if (!email.trim()) throw new Error("E-mail é obrigatório");
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error("E-mail inválido");
+      if (!password.trim()) throw new Error("Senha é obrigatória");
+      if (password.length < 6) throw new Error("Senha deve ter pelo menos 6 caracteres");
+
+      const users = await getUsers();
+      
+      if (users.some(u => u.email.toLowerCase() === email.toLowerCase())) {
+        throw new Error("Este e-mail já está cadastrado");
+      }
+
+      const newUser: User = {
+        id: Date.now().toString(),
+        name: name.trim(),
+        email: email.trim().toLowerCase(),
+      };
+
+      await saveUsers([...users, newUser]);
+      await saveUser(newUser);
+      
+    } catch (err: any) {
+      setError(err.message || "Erro ao criar conta");
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const signOut = useCallback(async () => {
+    setLoading(true);
+    try {
+      await saveUser(null);
+    } catch (err) {
+      console.error("Erro ao fazer logout:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  return (
+    <AuthContext.Provider
+      value={{
+        user,
+        loading,
+        error,
+        signIn,
+        signUp,
+        signOut,
+        clearError,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
+}
+
+export function useAuth() {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
+  return context;
+}
