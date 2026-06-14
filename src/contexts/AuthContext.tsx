@@ -1,62 +1,59 @@
-// CONTEXTO DE AUTENTICAÇÃO - Gerencia login, cadastro e logout
+/* CONTEXTO DE AUTENTICAÇÃO - Gerencia login, cadastro e logout */
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 import { router } from 'expo-router';
 import { api, User } from '@/services/api';
 
-// Tipagem do contexto
 interface AuthContextData {
-  user: User | null;                                    // Dados do usuário logado
-  loading: boolean;                                     // Estado de carregamento
-  signIn: (email: string, password: string) => Promise<void>;  // Login
-  signUp: (name: string, email: string, password: string) => Promise<void>; // Cadastro
-  signOut: () => void;                                  // Logout
+  user: User | null;
+  loading: boolean;
+  signIn: (email: string, password: string) => Promise<void>;
+  signUp: (name: string, email: string, password: string) => Promise<void>;
+  signOut: () => void;
 }
 
-// Cria o contexto
 const AuthContext = createContext<AuthContextData>({} as AuthContextData);
 
-// Provider do contexto (envolve a aplicação)
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  // Estado do usuário (null = deslogado)
   const [user, setUser] = useState<User | null>(null);
-  
-  // Estado de carregamento (login, cadastro)
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
-  // Inicialização (pode carregar usuário salvo aqui)
-  useEffect(() => {
-    setLoading(false);
-  }, []);
-
-  // Função de LOGIN
+  // Login
   const signIn = async (email: string, password: string) => {
-    setLoading(true);  // Ativa loading
+    setLoading(true);
     try {
-      const userData = await api.login(email, password);  // Chama API
-      setUser(userData);                                  // Salva usuário
-      router.replace('/(tabs)');                          // Vai para o dashboard
+      const userData = await api.login(email, password);
+      setUser(userData);
+      router.replace('/(tabs)');
+    } catch (error: any) {
+      console.log('Erro no login:', error.message);
+      throw error;
     } finally {
-      setLoading(false);  // Desativa loading (mesmo se der erro)
+      setLoading(false);
     }
   };
 
-  // Função de CADASTRO
+  // Cadastro
   const signUp = async (name: string, email: string, password: string) => {
     setLoading(true);
     try {
       const userData = await api.register(name, email, password);
       setUser(userData);
       router.replace('/(tabs)');
+    } catch (error: any) {
+      console.log('Erro no cadastro:', error.message);
+      throw error;
     } finally {
       setLoading(false);
     }
   };
 
-  // Função de LOGOUT
+  // Logout - CORRIGIDO
   const signOut = () => {
-    setUser(null);            // Remove usuário
-    router.replace('/');      // Volta para tela de login
+    console.log('Executando logout...');
+    setUser(null);
+    // Usar replace em vez de push para não permitir voltar
+    router.replace('/');
   };
 
   return (
@@ -66,5 +63,4 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-// Hook personalizado para usar o contexto em qualquer lugar
 export const useAuth = () => useContext(AuthContext);

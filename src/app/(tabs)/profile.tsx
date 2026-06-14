@@ -15,13 +15,21 @@ export default function Profile() {
 
   const { user, signOut } = useAuth();
 
+  // Função: Fazer logout com confirmação
   const handleLogout = () => {
     Alert.alert(
       "Sair",
       "Deseja encerrar a sessão atual?",
       [
         { text: "Cancelar", style: "cancel" },
-        { text: "Sair", onPress: signOut, style: "destructive" },
+        { 
+          text: "Sair", 
+          onPress: () => {
+            console.log("Botão Sair pressionado");
+            signOut();
+          },
+          style: "destructive" 
+        },
       ]
     );
   };
@@ -51,6 +59,7 @@ export default function Profile() {
         <TouchableOpacity
           style={[styles.menuItem, styles.logout]}
           onPress={handleLogout}
+          activeOpacity={0.7}
         >
           <Feather name="log-out" size={24} color={colors.expense} />
           <Text style={[styles.menuText, { color: colors.expense }]}>Sair</Text>

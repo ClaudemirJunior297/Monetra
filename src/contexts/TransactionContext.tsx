@@ -1,103 +1,116 @@
-// CONTEXTO DE TRANSAÇÕES - Gerencia dados financeiros
+/* CONTEXTO DE TRANSAÇÕES - Gerencia dados financeiros */
 
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { api } from "@/services/api";
 import { Category, MonthlySummary, Transaction, TransactionPayload } from "@/types/transaction";
 
-// Tipagem do contexto
 interface TransactionContextData {
-  transactions: Transaction[];                           // Lista de transações
-  summary: MonthlySummary;                               // Resumo financeiro
-  loading: boolean;                                      // Estado de carregamento
-  error: string | null;                                  // Mensagem de erro
-  refresh: () => Promise<void>;                          // Recarrega os dados
-  addTransaction: (payload: TransactionPayload) => Promise<void>;   // Adiciona
-  updateTransaction: (id: string, payload: TransactionPayload) => Promise<void>; // Atualiza
-  deleteTransaction: (id: string) => Promise<void>;      // Exclui
+  transactions: Transaction[];
+  summary: MonthlySummary;
+  loading: boolean;
+  error: string | null;
+  refresh: () => Promise<void>;
+  addTransaction: (payload: TransactionPayload) => Promise<void>;
+  updateTransaction: (id: string, payload: TransactionPayload) => Promise<void>;
+  deleteTransaction: (id: string) => Promise<void>;
 }
 
-// Cria o contexto
 const TransactionContext = createContext<TransactionContextData>({} as TransactionContextData);
 
-// Provider do contexto
 export function TransactionProvider({ children }: { children: React.ReactNode }) {
-  // Estado da lista de transações
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-  
-  // Estado de carregamento
   const [loading, setLoading] = useState(true);
-  
-  // Estado de erro
   const [error, setError] = useState<string | null>(null);
 
-  // Função: Buscar transações da API
+  // Buscar transações
   const refresh = useCallback(async () => {
     try {
-      setError(null);                         // Limpa erro anterior
-      const data = await api.getTransactions();  // Chama API
-      setTransactions(data);                  // Atualiza estado
+      setError(null);
+      const data = await api.getTransactions();
+      setTransactions(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erro ao carregar transações.");
     } finally {
-      setLoading(false);                      // Desativa loading
+      setLoading(false);
     }
   }, []);
 
-  // Carrega transações ao iniciar e atualiza a cada 10 segundos
+  // Carregar ao iniciar
   useEffect(() => {
-    refresh();                                 // Carrega inicial
-    const interval = setInterval(refresh, 10000); // Atualiza automático
-    return () => clearInterval(interval);      // Limpa ao desmontar
+    refresh();
   }, [refresh]);
 
-  // Função: Adicionar nova transação
+  // Adicionar transação - CORRIGIDO
   const addTransaction = useCallback(async (payload: TransactionPayload) => {
-    const created = await api.createTransaction(payload);  // Cria na API
-    setTransactions((current) => [created, ...current]);   // Adiciona no topo
-    await refresh();                                        // Sincroniza
+    setLoading(true);
+    try {
+      const created = await api.createTransaction(payload);
+      // Adiciona a nova transação no início da lista
+      setTransactions((current) => [created, ...current]);
+      // Recarrega para garantir sincronia com o backend
+      await refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Erro ao adicionar transação");
+      throw err;
+    } finally {
+      setLoading(false);
+    }
   }, [refresh]);
 
-  // Função: Atualizar transação existente
+  // Atualizar transação
   const updateTransaction = useCallback(async (id: string, payload: TransactionPayload) => {
-    const updated = await api.updateTransaction(id, payload);  // Atualiza na API
-    setTransactions((current) => 
-      current.map((item) => (item.id === id ? updated : item)) // Atualiza na lista
-    );
-    await refresh();  // Sincroniza
+    setLoading(true);
+    try {
+      const updated = await api.updateTransaction(id, payload);
+      setTransactions((current) =>
+        current.map((item) => (item.id === id ? updated : item))
+      );
+      await refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Erro ao atualizar transação");
+      throw err;
+    } finally {
+      setLoading(false);
+    }
   }, [refresh]);
 
-  // Função: Excluir transação
+  // Deletar transação
   const deleteTransaction = useCallback(async (id: string) => {
-    await api.deleteTransaction(id);                           // Exclui na API
-    setTransactions((current) => current.filter((item) => item.id !== id)); // Remove da lista
-    await refresh();  // Sincroniza
+    setLoading(true);
+    try {
+      await api.deleteTransaction(id);
+      setTransactions((current) => current.filter((item) => item.id !== id));
+      await refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Erro ao excluir transação");
+      throw err;
+    } finally {
+      setLoading(false);
+    }
   }, [refresh]);
 
-  // Calcula o resumo financeiro (receitas, despesas, saldo)
+  // Calcular resumo
   const summary = useMemo<MonthlySummary>(() => {
-    // Soma das receitas (income)
     const totalIncome = transactions
-      .filter((transaction) => transaction.type === "income")
-      .reduce((sum, transaction) => sum + transaction.amount, 0);
+      .filter((t) => t.type === "income")
+      .reduce((sum, t) => sum + t.amount, 0);
     
-    // Soma das despesas (expense)
     const totalExpense = transactions
-      .filter((transaction) => transaction.type === "expense")
-      .reduce((sum, transaction) => sum + transaction.amount, 0);
+      .filter((t) => t.type === "expense")
+      .reduce((sum, t) => sum + t.amount, 0);
     
-    // Gastos por categoria (para gráficos)
     const categoryBreakdown = transactions
-      .filter((transaction) => transaction.type === "expense")
-      .reduce<Partial<Record<Category, number>>>((acc, transaction) => {
-        acc[transaction.category] = (acc[transaction.category] || 0) + transaction.amount;
+      .filter((t) => t.type === "expense")
+      .reduce<Partial<Record<Category, number>>>((acc, t) => {
+        acc[t.category] = (acc[t.category] || 0) + t.amount;
         return acc;
       }, {});
 
     return {
-      totalIncome,                     // Total de receitas
-      totalExpense,                    // Total de despesas
-      balance: totalIncome - totalExpense,  // Saldo
-      categoryBreakdown,               // Gastos por categoria
+      totalIncome,
+      totalExpense,
+      balance: totalIncome - totalExpense,
+      categoryBreakdown,
     };
   }, [transactions]);
 
@@ -119,5 +132,4 @@ export function TransactionProvider({ children }: { children: React.ReactNode })
   );
 }
 
-// Hook personalizado para usar o contexto
 export const useTransactions = () => useContext(TransactionContext);
