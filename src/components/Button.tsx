@@ -6,9 +6,9 @@
 
 import { TouchableOpacity, Text, StyleSheet, ActivityIndicator } from "react-native";
 
-// ⭐ MUDE A COR AQUI ⭐
+// ⭐ CORES ATUALIZADAS ⭐
 const COLORS = {
-  primary: "#002ce8",     // 👈 Esta é a cor do botão (azul)
+  primary: "#c859ff",     // 👈 NOVA COR DO BOTÃO (lilás)
   white: "#FFFFFF",
   disabled: "#666666",
 };
@@ -48,7 +48,7 @@ export function Button({
 
 const styles = StyleSheet.create({
   button: {
-    backgroundColor: COLORS.primary,  // 👈 Cor de fundo do botão
+    backgroundColor: COLORS.primary,  // 👈 Agora é #c859ff
     paddingVertical: 14,
     paddingHorizontal: 24,
     borderRadius: 12,
@@ -57,7 +57,7 @@ const styles = StyleSheet.create({
     minHeight: 52,
   },
   text: {
-    color: COLORS.white,  // 👈 Cor do texto
+    color: COLORS.white,
     fontSize: 16,
     fontWeight: "600",
   },

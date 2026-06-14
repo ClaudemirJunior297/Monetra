@@ -1,6 +1,6 @@
 /**
  * ============================================================================
- * TELA DE LOGIN - Com logo personalizada
+ * TELA DE LOGIN - Com logo e cores atualizadas
  * ============================================================================
  */
 
@@ -24,7 +24,7 @@ import { useAuth } from "@/contexts/AuthContext";
 // Cores fixas
 const COLORS = {
   background: "#121212",
-  primary: "#002ce8",
+  primary: "#c859ff",      // 👈 COR DO BOTÃO (lilás)
   text: "#FFFFFF",
   textSecondary: "#888888",
 };
@@ -94,14 +94,14 @@ export default function Login() {
       >
         <ScrollView contentContainerStyle={styles.scrollContainer}>
           <View style={styles.container}>
-            {/* LOGO - IMAGEM PERSONALIZADA */}
+            {/* LOGO */}
             <Image 
-              source={require("@/assets/logo.png")}  // 👈 CAMINHO DA SUA LOGO
+              source={require("@/assets/logo.png")}
               style={styles.logo}
               resizeMode="contain"
             />
 
-            {/* TÍTULO (opcional - pode remover se a logo já tiver o nome) */}
+            {/* TÍTULO - AGORA BRANCO */}
             <Text style={styles.title}>Monetra</Text>
             <Text style={styles.subtitle}>Gerencie suas finanças de forma inteligente</Text>
 
@@ -160,13 +160,13 @@ const getStyles = () =>
     },
     logo: {
       width: "100%",
-      height: 120,        // 👈 AJUSTE A ALTURA DA SUA LOGO
+      height: 120,
       marginBottom: 24,
     },
     title: {
-      fontSize: 32,
+      fontSize: 42,
       fontWeight: "900",
-      color: COLORS.primary,
+      color: "#FFFFFF",        // 👈 BRANCO
       textAlign: "center",
       marginBottom: 8,
     },
@@ -185,7 +185,7 @@ const getStyles = () =>
       color: COLORS.textSecondary,
     },
     footerLink: {
-      color: COLORS.primary,
+      color: COLORS.primary,    // 👈 COR DO LINK (lilás)
       fontWeight: "700",
     },
   });
