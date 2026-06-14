@@ -1,6 +1,7 @@
 package com.monetra.service;
 
 import com.monetra.model.Transaction;
+import com.monetra.model.TransactionType;
 import com.monetra.repository.TransactionRepository;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
@@ -21,7 +22,6 @@ public class TransactionService {
         validate(transaction);
         transaction.setDescription(transaction.getDescription().trim());
         transaction.setCategory(transaction.getCategory().trim());
-        transaction.setType(normalizeType(transaction.getType()));
         if (transaction.getDate() == null) {
             transaction.setDate(LocalDateTime.now());
         }
@@ -40,21 +40,16 @@ public class TransactionService {
         Transaction transaction = transactionRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Transação não encontrada com ID: " + id));
 
-        if (transactionDetails.getDescription() != null) {
+        if (transactionDetails.getDescription() != null)
             transaction.setDescription(transactionDetails.getDescription().trim());
-        }
-        if (transactionDetails.getCategory() != null) {
+        if (transactionDetails.getCategory() != null)
             transaction.setCategory(transactionDetails.getCategory().trim());
-        }
-        if (transactionDetails.getAmount() != null) {
+        if (transactionDetails.getAmount() != null)
             transaction.setAmount(transactionDetails.getAmount());
-        }
-        if (transactionDetails.getType() != null) {
-            transaction.setType(normalizeType(transactionDetails.getType()));
-        }
-        if (transactionDetails.getDate() != null) {
+        if (transactionDetails.getType() != null)
+            transaction.setType(transactionDetails.getType());
+        if (transactionDetails.getDate() != null)
             transaction.setDate(transactionDetails.getDate());
-        }
 
         validate(transaction);
         return transactionRepository.save(transaction);
@@ -70,17 +65,17 @@ public class TransactionService {
     public Map<String, Object> getSummary() {
         List<Transaction> transactions = findAll();
         double totalReceita = transactions.stream()
-                .filter(t -> "RECEITA".equals(t.getType()))
+                .filter(t -> TransactionType.INCOME == t.getType())
                 .mapToDouble(Transaction::getAmount)
                 .sum();
         double totalDespesa = transactions.stream()
-                .filter(t -> "DESPESA".equals(t.getType()))
+                .filter(t -> TransactionType.EXPENSE == t.getType())
                 .mapToDouble(Transaction::getAmount)
                 .sum();
 
         Map<String, Double> categorias = new HashMap<>();
         transactions.stream()
-                .filter(t -> "DESPESA".equals(t.getType()))
+                .filter(t -> TransactionType.EXPENSE == t.getType())
                 .forEach(t -> categorias.merge(t.getCategory(), t.getAmount(), Double::sum));
 
         Map<String, Object> summary = new HashMap<>();
@@ -95,31 +90,18 @@ public class TransactionService {
         return transactionRepository.findByCategoryIgnoreCaseOrderByDateDesc(category);
     }
 
-    public List<Transaction> findByType(String type) {
-        return transactionRepository.findByTypeOrderByDateDesc(normalizeType(type));
+    public List<Transaction> findByType(TransactionType type) {
+        return transactionRepository.findByTypeOrderByDateDesc(type);
     }
 
     private void validate(Transaction transaction) {
-        if (transaction.getDescription() == null || transaction.getDescription().trim().isEmpty()) {
+        if (transaction.getDescription() == null || transaction.getDescription().trim().isEmpty())
             throw new IllegalArgumentException("Descrição não pode estar vazia");
-        }
-        if (transaction.getCategory() == null || transaction.getCategory().trim().isEmpty()) {
+        if (transaction.getCategory() == null || transaction.getCategory().trim().isEmpty())
             throw new IllegalArgumentException("Categoria não pode estar vazia");
-        }
-        if (transaction.getAmount() == null || transaction.getAmount() <= 0) {
+        if (transaction.getAmount() == null || transaction.getAmount() <= 0)
             throw new IllegalArgumentException("Valor deve ser maior que zero");
-        }
-        transaction.setType(normalizeType(transaction.getType()));
-    }
-
-    private String normalizeType(String type) {
-        if (type == null) {
-            throw new IllegalArgumentException("Tipo deve ser RECEITA ou DESPESA");
-        }
-        String normalized = type.trim().toUpperCase();
-        if (!"RECEITA".equals(normalized) && !"DESPESA".equals(normalized)) {
-            throw new IllegalArgumentException("Tipo deve ser RECEITA ou DESPESA");
-        }
-        return normalized;
+        if (transaction.getType() == null)
+            throw new IllegalArgumentException("Tipo deve ser INCOME ou EXPENSE");
     }
 }

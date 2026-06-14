@@ -20,6 +20,7 @@
 package com.monetra.controller;
 
 import com.monetra.model.Transaction;
+import com.monetra.model.TransactionType;
 import com.monetra.service.TransactionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -287,7 +288,7 @@ public class TransactionController {
     @Operation(summary = "Filtrar por tipo", description = "Retorna transações de tipo RECEITA ou DESPESA")
     @ApiResponse(responseCode = "200", description = "Transações encontradas")
     public ResponseEntity<List<Transaction>> getByType(@PathVariable String type) {
-        return ResponseEntity.ok(transactionService.findByType(type));
+        return ResponseEntity.ok(transactionService.findByType(TransactionType.valueOf(type.toUpperCase())));
     }
 
     /**
