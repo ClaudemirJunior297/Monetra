@@ -1,5 +1,5 @@
 /**
- * TELA DE CADASTRO - Com logo personalizada
+ * TELA DE LOGIN - Com logo e cores atualizadas
  */
 
 import { useState, useEffect } from "react";
@@ -22,49 +22,28 @@ import { useAuth } from "@/contexts/AuthContext";
 // Cores fixas da tela
 const COLORS = {
   background: "#121212",   // Fundo escuro
-  primary: "#002ce8",      // Cor do link (azul)
+  primary: "#c859ff",      // Cor do botão e link (lilás)
   text: "#FFFFFF",         // Texto branco
   textSecondary: "#888888", // Texto secundário (cinza)
 };
 
-export default function Signup() {
-  // Pega função de cadastro e estado de loading do contexto
-  const { signUp, loading } = useAuth();
+export default function Login() {
+  // Pega função de login e estado de loading do contexto
+  const { signIn, loading } = useAuth();
 
   // Estados do formulário
-  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   
   // Estados de erro
-  const [nameError, setNameError] = useState("");
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
-  const [confirmError, setConfirmError] = useState("");
   
   // Estados para saber se o campo já foi tocado
-  const [touchedName, setTouchedName] = useState(false);
   const [touchedEmail, setTouchedEmail] = useState(false);
   const [touchedPassword, setTouchedPassword] = useState(false);
-  const [touchedConfirm, setTouchedConfirm] = useState(false);
 
-  // Valida nome em tempo real
-  useEffect(() => {
-    if (touchedName) {
-      if (!name) {
-        setNameError("Nome é obrigatório");
-      } else if (name.trim().length < 3) {
-        setNameError("Nome deve ter pelo menos 3 caracteres");
-      } else {
-        setNameError("");
-      }
-    } else {
-      setNameError("");
-    }
-  }, [name, touchedName]);
-
-  // Valida e-mail em tempo real
+  // Valida o e-mail em tempo real
   useEffect(() => {
     if (touchedEmail) {
       if (!email) {
@@ -79,7 +58,7 @@ export default function Signup() {
     }
   }, [email, touchedEmail]);
 
-  // Valida senha em tempo real
+  // Valida a senha em tempo real
   useEffect(() => {
     if (touchedPassword) {
       if (!password) {
@@ -94,37 +73,20 @@ export default function Signup() {
     }
   }, [password, touchedPassword]);
 
-  // Valida confirmação de senha em tempo real
-  useEffect(() => {
-    if (touchedConfirm) {
-      if (!confirmPassword) {
-        setConfirmError("Confirme sua senha");
-      } else if (password !== confirmPassword) {
-        setConfirmError("As senhas não conferem");
-      } else {
-        setConfirmError("");
-      }
-    } else {
-      setConfirmError("");
-    }
-  }, [password, confirmPassword, touchedConfirm]);
-
-  // Função executada ao clicar em Cadastrar
-  const handleSignup = async () => {
-    setTouchedName(true);
+  // Função executada ao clicar em Entrar
+  const handleLogin = async () => {
     setTouchedEmail(true);
     setTouchedPassword(true);
-    setTouchedConfirm(true);
     Keyboard.dismiss();  // Fecha o teclado
 
     // Verifica se os campos estão preenchidos e sem erros
-    if (!name || !email || !password || !confirmPassword) return;
-    if (nameError || emailError || passwordError || confirmError) return;
+    if (!email || !password) return;
+    if (emailError || passwordError) return;
 
     try {
-      await signUp(name, email, password);
+      await signIn(email, password);
       router.replace("/(tabs)");
-    } catch (err) {
+    } catch (err: any) {
       console.log(err);
     }
   };
@@ -151,22 +113,12 @@ export default function Signup() {
             />
 
             {/* Título e subtítulo */}
-            <Text style={styles.title}>Criar Conta</Text>
-            <Text style={styles.subtitle}>Comece a controlar seus gastos hoje</Text>
+            <Text style={styles.title}>Monetra</Text>
+            <Text style={styles.subtitle}>Gerencie suas finanças de forma inteligente</Text>
 
             {/* Formulário */}
             <View style={styles.form}>
-
-              {/* Campo nome completo */}
-              <Input
-                placeholder="Nome completo"
-                value={name}
-                onChangeText={setName}
-                onFocus={() => setTouchedName(true)}
-                error={nameError}
-                autoCapitalize="words"
-              />
-
+              
               {/* Campo e-mail */}
               <Input
                 placeholder="E-mail"
@@ -188,29 +140,19 @@ export default function Signup() {
                 error={passwordError}
               />
 
-              {/* Campo confirmar senha */}
-              <Input
-                placeholder="Confirmar senha"
-                secureTextEntry
-                value={confirmPassword}
-                onChangeText={setConfirmPassword}
-                onFocus={() => setTouchedConfirm(true)}
-                error={confirmError}
-              />
-
-              {/* Botão cadastrar */}
+              {/* Botão entrar */}
               <Button
-                label={loading ? "Cadastrando..." : "Cadastrar"}
-                onPress={handleSignup}
+                label={loading ? "Entrando..." : "Entrar"}
+                onPress={handleLogin}
                 loading={loading}
               />
             </View>
 
-            {/* Link para tela de login */}
+            {/* Link para tela de cadastro */}
             <Text style={styles.footerText}>
-              Já tem uma conta?{" "}
-              <Link href="/login" style={styles.footerLink}>
-                Faça login.
+              Não tem uma conta?{" "}
+              <Link href="/signup" style={styles.footerLink}>
+                Cadastre-se aqui.
               </Link>
             </Text>
 
@@ -239,9 +181,9 @@ const getStyles = () =>
       marginBottom: 24,
     },
     title: {
-      fontSize: 28,
+      fontSize: 42,
       fontWeight: "900",
-      color: COLORS.text,
+      color: "#FFFFFF",
       textAlign: "center",
       marginBottom: 8,
     },

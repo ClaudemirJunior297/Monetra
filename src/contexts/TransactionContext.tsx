@@ -25,7 +25,11 @@ export function TransactionProvider({ children }: { children: React.ReactNode })
   const [error, setError] = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
-    if (!userId) return;
+    if (!userId) {
+      setLoading(false);
+      setTransactions([]);
+      return;
+    }
     try {
       setError(null);
       const data = await api.getTransactions(userId);

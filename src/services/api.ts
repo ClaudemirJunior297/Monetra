@@ -6,7 +6,7 @@ export interface User {
   email: string;
 }
 
-const BASE_URL = "http://localhost:8080";
+const BASE_URL = "https://vigilant-rotary-phone-jj94x6pr49qgfpwxj-8080.app.github.dev";
 
 const toApiType = (type: string) => (type === "income" ? "INCOME" : "EXPENSE");
 const fromApiType = (type: string) => (type === "INCOME" ? "income" : "expense");
