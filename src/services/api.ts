@@ -20,13 +20,13 @@ const fromApiTransaction = (t: any): Transaction => ({
   date: new Date(t.date),
 });
 
-const toApiTransaction = (payload: TransactionPayload) => ({
+const toApiTransaction = (payload: TransactionPayload, userId: number) => ({
   description: payload.description,
   category: payload.category,
   amount: payload.amount,
   type: toApiType(payload.type),
   date: payload.date?.toISOString() || new Date().toISOString(),
-  userId: 1,
+  userId,
 });
 
 export const api = {
@@ -38,7 +38,7 @@ export const api = {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
     });
-    if (!res.ok) throw new Error("Usuário ou senha inválidos");
+    if (!res.ok) throw new Error("Usuario ou senha invalidos");
     return res.json();
   },
 
@@ -48,35 +48,35 @@ export const api = {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name, email, password }),
     });
-    if (!res.ok) throw new Error("Erro ao cadastrar usuário");
+    if (!res.ok) throw new Error("Erro ao cadastrar usuario");
     return res.json();
   },
 
-  async getTransactions(): Promise<Transaction[]> {
-    const res = await fetch(`${BASE_URL}/api/transactions`);
-    if (!res.ok) throw new Error("Erro ao buscar transações");
+  async getTransactions(userId: number): Promise<Transaction[]> {
+    const res = await fetch(`${BASE_URL}/api/transactions?userId=${userId}`);
+    if (!res.ok) throw new Error("Erro ao buscar transacoes");
     const data = await res.json();
     return data.map(fromApiTransaction);
   },
 
-  async createTransaction(payload: TransactionPayload): Promise<Transaction> {
+  async createTransaction(payload: TransactionPayload, userId: number): Promise<Transaction> {
     const res = await fetch(`${BASE_URL}/api/transactions`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(toApiTransaction(payload)),
+      body: JSON.stringify(toApiTransaction(payload, userId)),
     });
-    if (!res.ok) throw new Error("Erro ao criar transação");
+    if (!res.ok) throw new Error("Erro ao criar transacao");
     const data = await res.json();
     return fromApiTransaction(data);
   },
 
-  async updateTransaction(id: string, payload: TransactionPayload): Promise<Transaction> {
+  async updateTransaction(id: string, payload: TransactionPayload, userId: number): Promise<Transaction> {
     const res = await fetch(`${BASE_URL}/api/transactions/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(toApiTransaction(payload)),
+      body: JSON.stringify(toApiTransaction(payload, userId)),
     });
-    if (!res.ok) throw new Error("Erro ao atualizar transação");
+    if (!res.ok) throw new Error("Erro ao atualizar transacao");
     const data = await res.json();
     return fromApiTransaction(data);
   },
@@ -85,6 +85,6 @@ export const api = {
     const res = await fetch(`${BASE_URL}/api/transactions/${id}`, {
       method: "DELETE",
     });
-    if (!res.ok) throw new Error("Erro ao deletar transação");
+    if (!res.ok) throw new Error("Erro ao deletar transacao");
   },
 };

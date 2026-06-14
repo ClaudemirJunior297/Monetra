@@ -86,6 +86,10 @@ public class TransactionService {
         return summary;
     }
 
+    public List<Transaction> findByUserId(Long userId) {
+        return transactionRepository.findByUserIdOrderByDateDesc(userId);
+    }
+
     public List<Transaction> findByCategory(String category) {
         return transactionRepository.findByCategoryIgnoreCaseOrderByDateDesc(category);
     }

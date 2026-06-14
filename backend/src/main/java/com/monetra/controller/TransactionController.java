@@ -73,8 +73,10 @@ public class TransactionController {
     @GetMapping
     @Operation(summary = "Listar todas as transações", description = "Retorna uma lista com todas as transações registradas")
     @ApiResponse(responseCode = "200", description = "Lista de transações retornada com sucesso")
-    public ResponseEntity<List<Transaction>> getAll() {
-        List<Transaction> transactions = transactionService.findAll();
+    public ResponseEntity<List<Transaction>> getAll(@RequestParam(required = false) Long userId) {
+        List<Transaction> transactions = userId != null
+            ? transactionService.findByUserId(userId)
+            : transactionService.findAll();
         return ResponseEntity.ok(transactions);
     }
 

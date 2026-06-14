@@ -1,7 +1,6 @@
-/* CONTEXTO DE TRANSAÇÕES - Gerencia dados financeiros */
-
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { api } from "@/services/api";
+import { useAuth } from "@/contexts/AuthContext";
 import { Category, MonthlySummary, Transaction, TransactionPayload } from "@/types/transaction";
 
 interface TransactionContextData {
@@ -18,63 +17,60 @@ interface TransactionContextData {
 const TransactionContext = createContext<TransactionContextData>({} as TransactionContextData);
 
 export function TransactionProvider({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth();
+  const userId = Number(user?.id ?? 0);
+
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Buscar transações
   const refresh = useCallback(async () => {
+    if (!userId) return;
     try {
       setError(null);
-      const data = await api.getTransactions();
+      const data = await api.getTransactions(userId);
       setTransactions(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao carregar transações.");
+      setError(err instanceof Error ? err.message : "Erro ao carregar transacoes.");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [userId]);
 
-  // Carregar ao iniciar
   useEffect(() => {
     refresh();
   }, [refresh]);
 
-  // Adicionar transação - CORRIGIDO
   const addTransaction = useCallback(async (payload: TransactionPayload) => {
     setLoading(true);
     try {
-      const created = await api.createTransaction(payload);
-      // Adiciona a nova transação no início da lista
+      const created = await api.createTransaction(payload, userId);
       setTransactions((current) => [created, ...current]);
-      // Recarrega para garantir sincronia com o backend
       await refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao adicionar transação");
+      setError(err instanceof Error ? err.message : "Erro ao adicionar transacao");
       throw err;
     } finally {
       setLoading(false);
     }
-  }, [refresh]);
+  }, [refresh, userId]);
 
-  // Atualizar transação
   const updateTransaction = useCallback(async (id: string, payload: TransactionPayload) => {
     setLoading(true);
     try {
-      const updated = await api.updateTransaction(id, payload);
+      const updated = await api.updateTransaction(id, payload, userId);
       setTransactions((current) =>
         current.map((item) => (item.id === id ? updated : item))
       );
       await refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao atualizar transação");
+      setError(err instanceof Error ? err.message : "Erro ao atualizar transacao");
       throw err;
     } finally {
       setLoading(false);
     }
-  }, [refresh]);
+  }, [refresh, userId]);
 
-  // Deletar transação
   const deleteTransaction = useCallback(async (id: string) => {
     setLoading(true);
     try {
@@ -82,23 +78,22 @@ export function TransactionProvider({ children }: { children: React.ReactNode })
       setTransactions((current) => current.filter((item) => item.id !== id));
       await refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao excluir transação");
+      setError(err instanceof Error ? err.message : "Erro ao excluir transacao");
       throw err;
     } finally {
       setLoading(false);
     }
   }, [refresh]);
 
-  // Calcular resumo
   const summary = useMemo<MonthlySummary>(() => {
     const totalIncome = transactions
       .filter((t) => t.type === "income")
       .reduce((sum, t) => sum + t.amount, 0);
-    
+
     const totalExpense = transactions
       .filter((t) => t.type === "expense")
       .reduce((sum, t) => sum + t.amount, 0);
-    
+
     const categoryBreakdown = transactions
       .filter((t) => t.type === "expense")
       .reduce<Partial<Record<Category, number>>>((acc, t) => {
@@ -116,16 +111,7 @@ export function TransactionProvider({ children }: { children: React.ReactNode })
 
   return (
     <TransactionContext.Provider
-      value={{
-        transactions,
-        summary,
-        loading,
-        error,
-        refresh,
-        addTransaction,
-        updateTransaction,
-        deleteTransaction,
-      }}
+      value={{ transactions, summary, loading, error, refresh, addTransaction, updateTransaction, deleteTransaction }}
     >
       {children}
     </TransactionContext.Provider>
