@@ -1,7 +1,5 @@
 /**
- * ============================================================================
  * TELA DE LOGIN - Com logo e cores atualizadas
- * ============================================================================
  */
 
 import { useState, useEffect } from "react";
@@ -21,25 +19,31 @@ import { Input } from "@/components/Input";
 import { Button } from "@/components/Button";
 import { useAuth } from "@/contexts/AuthContext";
 
-// Cores fixas
+// Cores fixas da tela
 const COLORS = {
-  background: "#121212",
-  primary: "#c859ff",      // 👈 COR DO BOTÃO (lilás)
-  text: "#FFFFFF",
-  textSecondary: "#888888",
+  background: "#121212",   // Fundo escuro
+  primary: "#c859ff",      // Cor do botão e link (lilás)
+  text: "#FFFFFF",         // Texto branco
+  textSecondary: "#888888", // Texto secundário (cinza)
 };
 
 export default function Login() {
+  // Pega função de login e estado de loading do contexto
   const { signIn, loading } = useAuth();
 
+  // Estados do formulário
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  
+  // Estados de erro
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
+  
+  // Estados para saber se o campo já foi tocado
   const [touchedEmail, setTouchedEmail] = useState(false);
   const [touchedPassword, setTouchedPassword] = useState(false);
 
-  // Validações
+  // Valida o e-mail em tempo real
   useEffect(() => {
     if (touchedEmail) {
       if (!email) {
@@ -54,6 +58,7 @@ export default function Login() {
     }
   }, [email, touchedEmail]);
 
+  // Valida a senha em tempo real
   useEffect(() => {
     if (touchedPassword) {
       if (!password) {
@@ -68,17 +73,19 @@ export default function Login() {
     }
   }, [password, touchedPassword]);
 
+  // Função executada ao clicar em Entrar
   const handleLogin = async () => {
     setTouchedEmail(true);
     setTouchedPassword(true);
-    Keyboard.dismiss();
+    Keyboard.dismiss();  // Fecha o teclado
 
+    // Verifica se os campos estão preenchidos e sem erros
     if (!email || !password) return;
     if (emailError || passwordError) return;
 
     try {
       await signIn(email, password);
-      router.replace("/(tabs)");
+      router.replace("/(tabs)");  // Vai para o dashboard
     } catch (err) {
       console.log(err);
     }
@@ -87,26 +94,32 @@ export default function Login() {
   const styles = getStyles();
 
   return (
+    // Fecha o teclado ao tocar fora dos inputs
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      
+      {/* Evita que o teclado cubra os campos */}
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.select({ ios: "padding", android: "height" })}
       >
         <ScrollView contentContainerStyle={styles.scrollContainer}>
           <View style={styles.container}>
-            {/* LOGO */}
+
+            {/* Logo do aplicativo */}
             <Image 
               source={require("@/assets/logo.png")}
               style={styles.logo}
               resizeMode="contain"
             />
 
-            {/* TÍTULO - AGORA BRANCO */}
+            {/* Título e subtítulo */}
             <Text style={styles.title}>Monetra</Text>
             <Text style={styles.subtitle}>Gerencie suas finanças de forma inteligente</Text>
 
-            {/* FORMULÁRIO */}
+            {/* Formulário */}
             <View style={styles.form}>
+              
+              {/* Campo e-mail */}
               <Input
                 placeholder="E-mail"
                 keyboardType="email-address"
@@ -117,6 +130,7 @@ export default function Login() {
                 error={emailError}
               />
 
+              {/* Campo senha */}
               <Input
                 placeholder="Senha"
                 secureTextEntry
@@ -126,6 +140,7 @@ export default function Login() {
                 error={passwordError}
               />
 
+              {/* Botão entrar */}
               <Button
                 label={loading ? "Entrando..." : "Entrar"}
                 onPress={handleLogin}
@@ -133,13 +148,14 @@ export default function Login() {
               />
             </View>
 
-            {/* LINK PARA CADASTRO */}
+            {/* Link para tela de cadastro */}
             <Text style={styles.footerText}>
               Não tem uma conta?{" "}
               <Link href="/signup" style={styles.footerLink}>
                 Cadastre-se aqui.
               </Link>
             </Text>
+
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -147,6 +163,7 @@ export default function Login() {
   );
 }
 
+// Estilos da tela
 const getStyles = () =>
   StyleSheet.create({
     scrollContainer: {
@@ -166,7 +183,7 @@ const getStyles = () =>
     title: {
       fontSize: 42,
       fontWeight: "900",
-      color: "#FFFFFF",        // 👈 BRANCO
+      color: "#FFFFFF",
       textAlign: "center",
       marginBottom: 8,
     },
@@ -185,7 +202,7 @@ const getStyles = () =>
       color: COLORS.textSecondary,
     },
     footerLink: {
-      color: COLORS.primary,    // 👈 COR DO LINK (lilás)
+      color: COLORS.primary,
       fontWeight: "700",
     },
   });

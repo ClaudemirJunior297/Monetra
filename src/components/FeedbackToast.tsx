@@ -1,4 +1,4 @@
-/*COMPONENTE FEEDBACK TOAST - Notificações temporárias estilo toast*/
+/* COMPONENTE: Notificações temporárias estilo toast */
 
 import { useEffect } from "react";
 import {
@@ -9,16 +9,24 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
-import { colors, spacing, typography, animations } from "@/styles/theme";
 
-// Interface para as props
+// Cores fixas
+const COLORS = {
+  success: "#10b981",
+  error: "#ef4444",
+  warning: "#f59e0b",
+  primary: "#c859ff",
+  white: "#FFFFFF",
+  black: "#000000",
+};
+
 interface FeedbackToastProps {
-  visible: boolean;           // Controla se o toast está visível
-  message: string;            // Mensagem a ser exibida
-  type?: "success" | "error" | "warning" | "info"; // Tipo do toast
-  duration?: number;          // Duração em ms (padrão: 3000)
-  onHide: () => void;         // Função chamada ao esconder
-  position?: "top" | "center" | "bottom"; // Posição na tela
+  visible: boolean;
+  message: string;
+  type?: "success" | "error" | "warning" | "info";
+  duration?: number;
+  onHide: () => void;
+  position?: "top" | "bottom";
 }
 
 export function FeedbackToast({
@@ -29,50 +37,32 @@ export function FeedbackToast({
   onHide,
   position = "top",
 }: FeedbackToastProps) {
-  // Animação de opacidade (fade in/out)
   const fadeAnim = new Animated.Value(0);
 
-  // Configurações baseadas no tipo do toast
   const getToastConfig = () => {
     switch (type) {
       case "success":
-        return {
-          backgroundColor: colors.success,
-          icon: "check-circle",
-        };
+        return { backgroundColor: COLORS.success, icon: "check-circle" };
       case "error":
-        return {
-          backgroundColor: colors.error,
-          icon: "alert-circle",
-        };
+        return { backgroundColor: COLORS.error, icon: "alert-circle" };
       case "warning":
-        return {
-          backgroundColor: colors.warning,
-          icon: "alert-triangle",
-        };
-      default: // info
-        return {
-          backgroundColor: colors.primary,
-          icon: "info",
-        };
+        return { backgroundColor: COLORS.warning, icon: "alert-triangle" };
+      default:
+        return { backgroundColor: COLORS.primary, icon: "info" };
     }
   };
 
   const { backgroundColor, icon } = getToastConfig();
 
-  // Efeito que controla a animação quando visible muda
   useEffect(() => {
     if (visible) {
-      // Animação de entrada (fade in)
       Animated.timing(fadeAnim, {
         toValue: 1,
         duration: 300,
         useNativeDriver: true,
       }).start();
 
-      // Esconde automaticamente após a duração
       const timer = setTimeout(() => {
-        // Animação de saída (fade out)
         Animated.timing(fadeAnim, {
           toValue: 0,
           duration: 300,
@@ -86,77 +76,61 @@ export function FeedbackToast({
 
   if (!visible) return null;
 
-  // Define o estilo de posicionamento
-  const getPositionStyle = () => {
-    switch (position) {
-      case "top":
-        return { top: 60 };
-      case "center":
-        return { justifyContent: "center" };
-      case "bottom":
-        return { bottom: 100 };
-      default:
-        return { top: 60 };
-    }
-  };
+  // Define a posição
+  const topPosition = position === "top" ? 60 : undefined;
+  const bottomPosition = position === "bottom" ? 100 : undefined;
 
   return (
     <Animated.View
       style={[
         styles.container,
-        getPositionStyle(),
         { opacity: fadeAnim, backgroundColor },
-        position === "center" && styles.centerContainer,
+        topPosition && { top: topPosition },
+        bottomPosition && { bottom: bottomPosition },
       ]}
     >
       <View style={styles.content}>
-        <Feather name={icon as any} size={20} color={colors.white} />
+        <Feather name={icon as any} size={20} color={COLORS.white} />
         <Text style={styles.message}>{message}</Text>
       </View>
-      
-      {/* Botão para fechar manualmente */}
+
       <TouchableOpacity onPress={onHide} style={styles.closeButton}>
-        <Feather name="x" size={18} color={colors.white} />
+        <Feather name="x" size={18} color={COLORS.white} />
       </TouchableOpacity>
     </Animated.View>
   );
 }
 
-// ========== ESTILOS DO COMPONENTE ==========
 const styles = StyleSheet.create({
   container: {
     position: "absolute",
-    left: spacing.md,
-    right: spacing.md,
-    padding: spacing.md,
+    left: 16,
+    right: 16,
+    padding: 16,
     borderRadius: 12,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    shadowColor: colors.black,
+    shadowColor: COLORS.black,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 8,
     elevation: 5,
     zIndex: 1000,
   },
-  centerContainer: {
-    top: "50%",
-    transform: [{ translateY: -50 }],
-  },
   content: {
     flexDirection: "row",
     alignItems: "center",
-    gap: spacing.sm,
+    gap: 8,
     flex: 1,
   },
   message: {
-    ...typography.body,
-    color: colors.white,
+    fontSize: 14,
+    color: COLORS.white,
     fontWeight: "600",
     flex: 1,
   },
   closeButton: {
-    padding: spacing.xs,
+    padding: 4,
   },
 });

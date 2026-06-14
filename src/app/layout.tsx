@@ -1,2 +1,2 @@
-// Re-exporta o componente padrão do arquivo "_layout" (normalmente o layout principal da aplicação)
+// Re-exporta o layout principal da aplicação (arquivo _layout.tsx)
 export { default } from "./_layout";

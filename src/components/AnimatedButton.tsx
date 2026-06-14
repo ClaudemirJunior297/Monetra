@@ -1,16 +1,17 @@
-/*COMPONENTE ANIMATED BUTTON - Botão com animação de escala e efeitos*/
+/* COMPONENTE: Botão com animação de escala e ícone */
 
 import { TouchableOpacity, Text, StyleSheet, Animated } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { colors, spacing, typography } from "@/styles/theme";
 
+// Props do componente
 interface AnimatedButtonProps {
-  label: string;
-  icon?: keyof typeof Feather.glyphMap; // Nome do ícone (ex: "plus", "check")
-  iconPosition?: "left" | "right";
-  onPress: () => void;
-  variant?: "primary" | "secondary" | "outline";
-  disabled?: boolean;
+  label: string;                                    // Texto do botão
+  icon?: keyof typeof Feather.glyphMap;             // Nome do ícone (ex: "plus", "check")
+  iconPosition?: "left" | "right";                  // Posição do ícone (esquerda ou direita)
+  onPress: () => void;                              // Função ao clicar
+  variant?: "primary" | "secondary" | "outline";    // Estilo do botão
+  disabled?: boolean;                               // Desabilitar botão
 }
 
 export function AnimatedButton({
@@ -21,10 +22,11 @@ export function AnimatedButton({
   variant = "primary",
   disabled = false,
 }: AnimatedButtonProps) {
-  // Animação de escala
+  
+  // Valor da animação (1 = tamanho normal)
   const scaleAnim = new Animated.Value(1);
 
-  // Animação ao pressionar
+  // Quando pressiona: diminui para 0.96 (efeito de clique)
   const handlePressIn = () => {
     Animated.spring(scaleAnim, {
       toValue: 0.96,
@@ -33,7 +35,7 @@ export function AnimatedButton({
     }).start();
   };
 
-  // Animação ao soltar
+  // Quando solta: volta para 1 (tamanho normal)
   const handlePressOut = () => {
     Animated.spring(scaleAnim, {
       toValue: 1,
@@ -42,28 +44,29 @@ export function AnimatedButton({
     }).start();
   };
 
-  // Estilos baseados na variante
+  // Define o estilo do botão baseado na variante
   const getButtonStyle = () => {
     switch (variant) {
       case "secondary":
         return {
-          backgroundColor: colors.card,
+          backgroundColor: colors.card,          // Fundo do card
           borderWidth: 1.5,
-          borderColor: colors.primary,
+          borderColor: colors.primary,          // Borda lilás
         };
       case "outline":
         return {
-          backgroundColor: "transparent",
+          backgroundColor: "transparent",       // Fundo transparente
           borderWidth: 1.5,
-          borderColor: colors.textSecondary,
+          borderColor: colors.textSecondary,    // Borda cinza
         };
-      default:
+      default: // primary
         return {
-          backgroundColor: colors.primary,
+          backgroundColor: colors.primary,      // Fundo lilás
         };
     }
   };
 
+  // Define a cor do texto baseado na variante
   const getTextColor = () => {
     switch (variant) {
       case "secondary":
@@ -76,6 +79,7 @@ export function AnimatedButton({
   };
 
   return (
+    // View com animação de escala
     <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
       <TouchableOpacity
         style={[styles.button, getButtonStyle(), disabled && styles.disabled]}
@@ -85,10 +89,15 @@ export function AnimatedButton({
         activeOpacity={1}
         disabled={disabled}
       >
+        {/* Ícone à esquerda (se existir) */}
         {icon && iconPosition === "left" && (
           <Feather name={icon} size={20} color={getTextColor()} style={styles.iconLeft} />
         )}
+        
+        {/* Texto do botão */}
         <Text style={[styles.text, { color: getTextColor() }]}>{label}</Text>
+        
+        {/* Ícone à direita (se existir) */}
         {icon && iconPosition === "right" && (
           <Feather name={icon} size={20} color={getTextColor()} style={styles.iconRight} />
         )}
@@ -100,7 +109,7 @@ export function AnimatedButton({
 // ========== ESTILOS DO COMPONENTE ==========
 const styles = StyleSheet.create({
   button: {
-    flexDirection: "row",
+    flexDirection: "row",       // Ícone e texto na mesma linha
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: spacing.md,
@@ -113,12 +122,12 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   iconLeft: {
-    marginRight: spacing.sm,
+    marginRight: spacing.sm,    // Espaço entre ícone e texto
   },
   iconRight: {
-    marginLeft: spacing.sm,
+    marginLeft: spacing.sm,     // Espaço entre texto e ícone
   },
   disabled: {
-    opacity: 0.55,
+    opacity: 0.55,              // Botão desabilitado fica mais transparente
   },
 });

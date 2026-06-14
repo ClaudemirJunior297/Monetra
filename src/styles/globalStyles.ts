@@ -1,37 +1,31 @@
 /**
- * ============================================================================
- * ESTILOS GLOBAIS MODERNOS - Versão compatível com React Native
- * ============================================================================
+ * ESTILOS GLOBAIS MODERNOS - Compatível com React Native
  * 
- * ATENÇÃO: React Native não suporta algumas propriedades CSS como:
- * - backdropFilter (efeito vidro)
- * - backgroundClip (gradiente em texto)
- * 
- * Alternativas:
- * - Para efeito vidro: usar opacidade e bordas
- * - Para gradiente em texto: usar LinearGradient como fundo
- * 
- * @author Monetra Team
- * @version 2.0.0
- * ============================================================================
+ * ATENÇÃO: Propriedades CSS como backdropFilter e backgroundClip
+ * NÃO funcionam no React Native.
  */
 
 import { StyleSheet } from "react-native";
 import { colors, spacing, typography } from "./theme";
 
 export const globalStyles = StyleSheet.create({
-  // Container principal
+  
+  // ========== CONTAINERS ==========
+  
+  // Container padrão da tela
   container: {
     flex: 1,
     backgroundColor: colors.background,
   },
   
-  // Container com gradiente (fundo moderno)
+  // Container para gradiente (usar com LinearGradient)
   gradientContainer: {
     flex: 1,
   },
   
-  // Card com efeito semi-transparente (alternativa ao glassmorphism)
+  // ========== CARDS ==========
+  
+  // Card com efeito semi-transparente (alternativa ao vidro)
   glassCard: {
     backgroundColor: 'rgba(255, 255, 255, 0.08)',
     borderRadius: 20,
@@ -57,7 +51,7 @@ export const globalStyles = StyleSheet.create({
     elevation: 4,
   },
   
-  // Card flutuante
+  // Card flutuante (mais sombra)
   floatingCard: {
     backgroundColor: colors.card,
     borderRadius: 28,
@@ -71,7 +65,9 @@ export const globalStyles = StyleSheet.create({
     elevation: 6,
   },
   
-  // Botão moderno com gradiente (container)
+  // ========== BOTÕES ==========
+  
+  // Container para botão com gradiente
   gradientButton: {
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.lg,
@@ -81,7 +77,9 @@ export const globalStyles = StyleSheet.create({
     overflow: 'hidden',
   },
   
-  // Input moderno
+  // ========== INPUTS ==========
+  
+  // Input com estilo moderno
   modernInput: {
     backgroundColor: 'rgba(255, 255, 255, 0.06)',
     borderRadius: 16,
@@ -92,22 +90,27 @@ export const globalStyles = StyleSheet.create({
     borderColor: 'rgba(255, 255, 255, 0.1)',
   },
   
-  // Título com cor especial (gradiente não é suportado nativamente)
-  // Para gradiente em texto, use o componente LinearGradient
+  // ========== TEXTOS ==========
+  
+  // Texto com gradiente (fallback - use LinearGradient para efeito real)
   gradientText: {
     fontSize: 32,
     fontWeight: "700",
-    color: colors.primary, // Fallback
+    color: colors.primary,
   },
   
-  // Separador moderno
+  // ========== DIVISORES ==========
+  
+  // Separador moderno (linha fina)
   modernDivider: {
     height: 1,
     backgroundColor: 'rgba(255, 255, 255, 0.08)',
     marginVertical: spacing.md,
   },
   
-  // Badge moderno
+  // ========== BADGES ==========
+  
+  // Badge (etiqueta)
   modernBadge: {
     backgroundColor: colors.primary,
     borderRadius: 20,
@@ -124,37 +127,41 @@ export const globalStyles = StyleSheet.create({
     fontWeight: "600",
   },
   
-  // Row flexível
+  // ========== LAYOUT ==========
+  
+  // Linha horizontal (itens lado a lado)
   row: {
     flexDirection: "row",
     alignItems: "center",
     gap: spacing.md,
   },
   
-  // Row com espaço entre
+  // Linha com espaço entre os itens
   rowBetween: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
   },
   
-  // Centralizar conteúdo
+  // Centraliza conteúdo (horizontal e vertical)
   centerContent: {
     alignItems: "center",
     justifyContent: "center",
   },
   
-  // Espaçamento vertical
+  // Espaço vertical entre itens
   gapVertical: {
     gap: spacing.md,
   },
   
-  // Espaçamento horizontal
+  // Espaço horizontal entre itens
   gapHorizontal: {
     gap: spacing.sm,
   },
   
-  // Sombra padrão
+  // ========== SOMBRAS ==========
+  
+  // Sombra padrão (leve)
   shadow: {
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
@@ -163,7 +170,7 @@ export const globalStyles = StyleSheet.create({
     elevation: 4,
   },
   
-  // Sombra mais forte
+  // Sombra forte (mais destacada)
   shadowStrong: {
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 8 },
@@ -172,17 +179,19 @@ export const globalStyles = StyleSheet.create({
     elevation: 6,
   },
   
-  // Borda arredondada padrão
+  // ========== BORDAS ==========
+  
+  // Borda arredondada padrão (16px)
   rounded: {
     borderRadius: 16,
   },
   
-  // Borda arredondada grande
+  // Borda bem arredondada (24px)
   roundedLarge: {
     borderRadius: 24,
   },
   
-  // Borda arredondada pequena
+  // Borda pouco arredondada (12px)
   roundedSmall: {
     borderRadius: 12,
   },

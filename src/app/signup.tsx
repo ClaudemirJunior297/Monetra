@@ -1,7 +1,5 @@
 /**
- * ============================================================================
  * TELA DE CADASTRO - Com logo personalizada
- * ============================================================================
  */
 
 import { useState, useEffect } from "react";
@@ -21,33 +19,37 @@ import { Input } from "@/components/Input";
 import { Button } from "@/components/Button";
 import { useAuth } from "@/contexts/AuthContext";
 
-// Cores fixas
+// Cores fixas da tela
 const COLORS = {
-  background: "#121212",
-  primary: "#002ce8",
-  text: "#FFFFFF",
-  textSecondary: "#888888",
+  background: "#121212",   // Fundo escuro
+  primary: "#002ce8",      // Cor do link (azul)
+  text: "#FFFFFF",         // Texto branco
+  textSecondary: "#888888", // Texto secundário (cinza)
 };
 
 export default function Signup() {
+  // Pega função de cadastro e estado de loading do contexto
   const { signUp, loading } = useAuth();
 
+  // Estados do formulário
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   
+  // Estados de erro
   const [nameError, setNameError] = useState("");
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [confirmError, setConfirmError] = useState("");
   
+  // Estados para saber se o campo já foi tocado
   const [touchedName, setTouchedName] = useState(false);
   const [touchedEmail, setTouchedEmail] = useState(false);
   const [touchedPassword, setTouchedPassword] = useState(false);
   const [touchedConfirm, setTouchedConfirm] = useState(false);
 
-  // Validações
+  // Valida nome em tempo real
   useEffect(() => {
     if (touchedName) {
       if (!name) {
@@ -62,6 +64,7 @@ export default function Signup() {
     }
   }, [name, touchedName]);
 
+  // Valida e-mail em tempo real
   useEffect(() => {
     if (touchedEmail) {
       if (!email) {
@@ -76,6 +79,7 @@ export default function Signup() {
     }
   }, [email, touchedEmail]);
 
+  // Valida senha em tempo real
   useEffect(() => {
     if (touchedPassword) {
       if (!password) {
@@ -90,6 +94,7 @@ export default function Signup() {
     }
   }, [password, touchedPassword]);
 
+  // Valida confirmação de senha em tempo real
   useEffect(() => {
     if (touchedConfirm) {
       if (!confirmPassword) {
@@ -104,19 +109,21 @@ export default function Signup() {
     }
   }, [password, confirmPassword, touchedConfirm]);
 
+  // Função executada ao clicar em Cadastrar
   const handleSignup = async () => {
     setTouchedName(true);
     setTouchedEmail(true);
     setTouchedPassword(true);
     setTouchedConfirm(true);
-    Keyboard.dismiss();
+    Keyboard.dismiss();  // Fecha o teclado
 
+    // Verifica se os campos estão preenchidos e sem erros
     if (!name || !email || !password || !confirmPassword) return;
     if (nameError || emailError || passwordError || confirmError) return;
 
     try {
       await signUp(name, email, password);
-      router.replace("/(tabs)");
+      router.replace("/(tabs)");  // Vai para o dashboard
     } catch (err) {
       console.log(err);
     }
@@ -125,25 +132,32 @@ export default function Signup() {
   const styles = getStyles();
 
   return (
+    // Fecha o teclado ao tocar fora dos inputs
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      
+      {/* Evita que o teclado cubra os campos */}
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.select({ ios: "padding", android: "height" })}
       >
         <ScrollView contentContainerStyle={styles.scrollContainer}>
           <View style={styles.container}>
-            {/* LOGO - IMAGEM PERSONALIZADA */}
+
+            {/* Logo do aplicativo */}
             <Image 
-              source={require("@/assets/logo.png")}  // 👈 CAMINHO DA SUA LOGO
+              source={require("@/assets/logo.png")}
               style={styles.logo}
               resizeMode="contain"
             />
 
-            {/* TÍTULO (opcional) */}
+            {/* Título e subtítulo */}
             <Text style={styles.title}>Criar Conta</Text>
             <Text style={styles.subtitle}>Comece a controlar seus gastos hoje</Text>
 
+            {/* Formulário */}
             <View style={styles.form}>
+
+              {/* Campo nome completo */}
               <Input
                 placeholder="Nome completo"
                 value={name}
@@ -153,6 +167,7 @@ export default function Signup() {
                 autoCapitalize="words"
               />
 
+              {/* Campo e-mail */}
               <Input
                 placeholder="E-mail"
                 keyboardType="email-address"
@@ -163,6 +178,7 @@ export default function Signup() {
                 error={emailError}
               />
 
+              {/* Campo senha */}
               <Input
                 placeholder="Senha"
                 secureTextEntry
@@ -172,6 +188,7 @@ export default function Signup() {
                 error={passwordError}
               />
 
+              {/* Campo confirmar senha */}
               <Input
                 placeholder="Confirmar senha"
                 secureTextEntry
@@ -181,6 +198,7 @@ export default function Signup() {
                 error={confirmError}
               />
 
+              {/* Botão cadastrar */}
               <Button
                 label={loading ? "Cadastrando..." : "Cadastrar"}
                 onPress={handleSignup}
@@ -188,12 +206,14 @@ export default function Signup() {
               />
             </View>
 
+            {/* Link para tela de login */}
             <Text style={styles.footerText}>
               Já tem uma conta?{" "}
               <Link href="/" style={styles.footerLink}>
                 Faça login.
               </Link>
             </Text>
+
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -201,6 +221,7 @@ export default function Signup() {
   );
 }
 
+// Estilos da tela
 const getStyles = () =>
   StyleSheet.create({
     scrollContainer: {
@@ -214,7 +235,7 @@ const getStyles = () =>
     },
     logo: {
       width: "100%",
-      height: 120,        // 👈 AJUSTE A ALTURA
+      height: 120,
       marginBottom: 24,
     },
     title: {

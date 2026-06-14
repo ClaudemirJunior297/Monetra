@@ -1,66 +1,52 @@
-/*CONFIGURAÇÃO DE TIPOGRAFIA (Typography)*/
+/* CONFIGURAÇÃO DE TIPOGRAFIA - Estilos de texto do app */
 
 import { TextStyle } from "react-native";
 
-// Interface para garantir consistência nos tipos
+// Interface para padronizar os tipos de texto
 interface TypographyStyles {
-  title: TextStyle;
-  subtitle: TextStyle;
-  body: TextStyle;
-  caption: TextStyle;
-  button: TextStyle;
+  title: TextStyle;     // Título principal
+  subtitle: TextStyle;  // Subtítulo
+  body: TextStyle;      // Texto comum
+  caption: TextStyle;   // Texto pequeno
+  button: TextStyle;    // Texto de botão
 }
 
 export const typography: TypographyStyles = {
-  /**
-   * Título principal
-   * Uso: Nome do app, valor do saldo, cabeçalhos importantes
-   */
+  
+  // Título principal (ex: nome do app, saldo)
   title: {
     fontSize: 28,          // Tamanho grande
-    fontWeight: "700",     // Negrito (Bold)
-    lineHeight: 34,        // Altura da linha para melhor legibilidade
-    letterSpacing: -0.5,   // Espaçamento negativo para títulos mais compactos
+    fontWeight: "700",     // Negrito
+    lineHeight: 34,        // Altura da linha
+    letterSpacing: -0.5,   // Letras mais juntas
   },
   
-  /**
-   * Subtítulo
-   * Uso: Títulos de seções (ex: "Gastos por categoria", "Transações recentes")
-   */
+  // Subtítulo (ex: "Gastos por categoria")
   subtitle: {
     fontSize: 20,          // Tamanho médio-grande
-    fontWeight: "600",     // Semi-negrito (SemiBold)
+    fontWeight: "600",     // Semi-negrito
     lineHeight: 28,
     letterSpacing: -0.3,
   },
   
-  /**
-   * Texto corpo (padrão)
-   * Uso: Descrições, labels, textos comuns
-   */
+  // Texto corpo (texto padrão)
   body: {
-    fontSize: 16,          // Tamanho padrão de leitura
-    fontWeight: "400",     // Peso normal (Regular)
+    fontSize: 16,          // Tamanho padrão
+    fontWeight: "400",     // Normal
     lineHeight: 24,
   },
   
-  /**
-   * Texto pequeno (legenda)
-   * Uso: Datas, categorias, textos auxiliares, placeholders
-   */
+  // Texto pequeno (ex: datas, categorias)
   caption: {
     fontSize: 12,          // Tamanho pequeno
     fontWeight: "400",
     lineHeight: 16,
   },
   
-  /**
-   * Texto de botão
-   * Uso: Texto dentro de botões
-   */
+  // Texto de botão
   button: {
     fontSize: 16,
-    fontWeight: "600",     // Semi-negrito para destacar no botão
+    fontWeight: "600",     // Semi-negrito
     lineHeight: 24,
     textAlign: "center",
   },

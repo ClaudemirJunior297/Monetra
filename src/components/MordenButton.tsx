@@ -1,7 +1,5 @@
 /**
- * ============================================================================
- * COMPONENTE MODERN BUTTON - Botão com animação (sem Haptics)
- * ============================================================================
+ * COMPONENTE MODERN BUTTON - Botão com animação, gradiente e tamanhos variados
  */
 
 import React from 'react';
@@ -16,14 +14,15 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '@/contexts/ThemeContext';
 
+// Props do componente
 interface ModernButtonProps {
-  label: string;
-  onPress: () => void;
-  loading?: boolean;
-  disabled?: boolean;
-  variant?: 'primary' | 'secondary' | 'outline' | 'gradient';
-  size?: 'small' | 'medium' | 'large';
-  icon?: React.ReactNode;
+  label: string;                              // Texto do botão
+  onPress: () => void;                        // Função ao clicar
+  loading?: boolean;                          // Estado de carregamento
+  disabled?: boolean;                         // Desabilitado
+  variant?: 'primary' | 'secondary' | 'outline' | 'gradient';  // Estilo
+  size?: 'small' | 'medium' | 'large';        // Tamanho
+  icon?: React.ReactNode;                     // Ícone opcional
 }
 
 export function ModernButton({ 
@@ -37,25 +36,29 @@ export function ModernButton({
 }: ModernButtonProps) {
   
   const { theme } = useTheme();
+  
+  // Animação de escala (usando useRef para manter referência estável)
   const scaleAnim = React.useRef(new Animated.Value(1)).current;
   
+  // Quando pressiona: diminui o botão
   const handlePressIn = () => {
     Animated.spring(scaleAnim, {
-      toValue: 0.95,
+      toValue: 0.95,              // Diminui 5%
       useNativeDriver: true,
       speed: 50,
     }).start();
-    // Haptics removido
   };
   
+  // Quando solta: volta ao tamanho normal
   const handlePressOut = () => {
     Animated.spring(scaleAnim, {
-      toValue: 1,
+      toValue: 1,                 // Volta ao normal
       useNativeDriver: true,
       speed: 50,
     }).start();
   };
   
+  // Estilo do botão baseado na variante
   const getButtonStyle = () => {
     switch(variant) {
       case 'secondary':
@@ -73,6 +76,7 @@ export function ModernButton({
     }
   };
   
+  // Cor do texto baseado na variante
   const getTextStyle = () => {
     switch(variant) {
       case 'outline':
@@ -82,6 +86,7 @@ export function ModernButton({
     }
   };
   
+  // Tamanho do botão baseado na prop size
   const getSizeStyle = () => {
     switch(size) {
       case 'small':
@@ -93,8 +98,10 @@ export function ModernButton({
     }
   };
   
+  // Botão desabilitado ou em loading
   const isDisabled = disabled || loading;
   
+  // Conteúdo do botão (ícone + texto ou loading)
   const ButtonContent = () => (
     <>
       {icon && <View style={styles.iconContainer}>{icon}</View>}
@@ -108,6 +115,7 @@ export function ModernButton({
     </>
   );
   
+  // Botão gradiente (usando LinearGradient)
   if (variant === 'gradient' && !isDisabled) {
     return (
       <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
@@ -131,6 +139,7 @@ export function ModernButton({
     );
   }
   
+  // Botão normal (sem gradiente)
   return (
     <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
       <TouchableOpacity
@@ -147,13 +156,14 @@ export function ModernButton({
   );
 }
 
+// ========== ESTILOS DO COMPONENTE ==========
 const styles = StyleSheet.create({
   button: {
-    flexDirection: 'row',
+    flexDirection: 'row',       // Ícone e texto na mesma linha
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 30,
-    gap: 8,
+    borderRadius: 30,           // Botão bem arredondado
+    gap: 8,                     // Espaço entre ícone e texto
   },
   gradientContainer: {
     borderRadius: 30,
@@ -164,7 +174,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '600',          // Semi-negrito
   },
   smallButton: {
     paddingVertical: 8,
@@ -182,9 +192,9 @@ const styles = StyleSheet.create({
     minHeight: 60,
   },
   disabled: {
-    opacity: 0.55,
+    opacity: 0.55,              // Botão desabilitado fica transparente
   },
   iconContainer: {
-    marginRight: 8,
+    marginRight: 8,             // Espaço entre ícone e texto
   },
 });

@@ -367,7 +367,7 @@ const styles = StyleSheet.create({
 
   // Mensagem erro
   error: {
-    color: colors.alert,
+    color: colors.error,
     padding: spacing.lg
   },
 

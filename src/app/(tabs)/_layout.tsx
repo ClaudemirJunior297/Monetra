@@ -16,18 +16,21 @@ export default function TabLayout() {
       {/* Estrutura das abas */}
       <Tabs
         screenOptions={{
+          // Cores do cabecalho
           headerStyle: { backgroundColor: colors.card },
           headerTintColor: colors.white,
+          // Cores da barra inferior
           tabBarStyle: {
             backgroundColor: colors.card,
             borderTopColor: colors.border,
           },
+          // Cor da aba ativa e inativa
           tabBarActiveTintColor: colors.primary,
           tabBarInactiveTintColor: colors.textSecondary,
         }}
       >
 
-        {/* ABA 1 - Inicio */}
+        {/* ABA 1 - Inicio (Dashboard) */}
         <Tabs.Screen
           name="index"
           options={{
@@ -38,7 +41,7 @@ export default function TabLayout() {
           }}
         />
 
-        {/* ABA 2 - Transacoes */}
+        {/* ABA 2 - Lista de transacoes */}
         <Tabs.Screen
           name="transaction"
           options={{
@@ -49,7 +52,7 @@ export default function TabLayout() {
           }}
         />
 
-        {/* ABA 3 - Adicionar */}
+        {/* ABA 3 - Formulario para adicionar transacao */}
         <Tabs.Screen
           name="add"
           options={{
@@ -60,7 +63,7 @@ export default function TabLayout() {
           }}
         />
 
-        {/* ABA 4 - Graficos */}
+        {/* ABA 4 - Graficos e estatisticas */}
         <Tabs.Screen
           name="graphs"
           options={{
@@ -71,7 +74,7 @@ export default function TabLayout() {
           }}
         />
 
-        {/* ABA 5 - Perfil */}
+        {/* ABA 5 - Perfil do usuario */}
         <Tabs.Screen
           name="profile"
           options={{

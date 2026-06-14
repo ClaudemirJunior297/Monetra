@@ -15,126 +15,80 @@ import { Feather } from "@expo/vector-icons";
 // Importa cores e estilos
 import { colors, spacing, typography } from "@/styles/theme";
 
-// Importa autenticação
+// Importa autenticação (dados do usuário e função de logout)
 import { useAuth } from "@/contexts/AuthContext";
 
-// Importa a API
+// Importa a API (para mostrar a URL)
 import { api } from "@/services/api";
 
-// Função principal da tela
+// Função principal da tela de perfil
 export default function Profile() {
 
-  // Pega os dados do usuário
+  // Pega os dados do usuário e a função de logout do contexto
   const { user, signOut } = useAuth();
 
-  // Função: Fazer logout
+  // Função: Fazer logout com confirmação
   const handleLogout = () => {
 
-    // Mostra alerta de confirmação
+    // Mostra alerta de confirmação antes de sair
     Alert.alert(
       "Sair",
       "Deseja encerrar a sessão atual?",
       [
-        {
-          text: "Cancelar",
-          style: "cancel"
-        },
-
-        {
-          text: "Sair",
-          onPress: signOut,
-          style: "destructive"
-        },
+        { text: "Cancelar", style: "cancel" },      // Botão cancelar
+        { text: "Sair", onPress: signOut, style: "destructive" },  // Botão sair (vermelho)
       ]
     );
   };
 
   return (
 
-    // Container principal
+    // Container principal da tela
     <View style={styles.container}>
 
-      {/* Cabeçalho */}
+      {/* ========== CABEÇALHO COM AVATAR ========== */}
       <View style={styles.header}>
 
-        {/* Avatar */}
+        {/* Avatar circular com ícone de usuário */}
         <View style={styles.avatar}>
-
-          <Feather
-            name="user"
-            size={40}
-            color={colors.white}
-          />
-
+          <Feather name="user" size={40} color={colors.white} />
         </View>
 
-        {/* Nome do usuário */}
-        <Text style={styles.name}>
-          {user?.name}
-        </Text>
+        {/* Nome do usuário logado */}
+        <Text style={styles.name}>{user?.name}</Text>
 
-        {/* Email do usuário */}
-        <Text style={styles.email}>
-          {user?.email}
-        </Text>
+        {/* E-mail do usuário logado */}
+        <Text style={styles.email}>{user?.email}</Text>
 
       </View>
 
-      {/* Painel de informações */}
+      {/* ========== PAINEL DE INFORMAÇÕES TÉCNICAS ========== */}
       <View style={styles.panel}>
 
         {/* Informação da API */}
         <View style={styles.infoRow}>
-
-          <Text style={styles.infoLabel}>
-            API conectada
-          </Text>
-
-          <Text style={styles.infoValue}>
-            {api.baseUrl}
-          </Text>
-
+          <Text style={styles.infoLabel}>API conectada</Text>
+          <Text style={styles.infoValue}>{api.baseUrl}</Text>
         </View>
 
-        {/* Informação da sessão */}
+        {/* Informação da sessão (ativa ou não) */}
         <View style={styles.infoRow}>
-
-          <Text style={styles.infoLabel}>
-            Sessão
-          </Text>
-
-          <Text style={styles.infoValue}>
-            {user ? "Ativa" : "Não autenticada"}
-          </Text>
-
+          <Text style={styles.infoLabel}>Sessão</Text>
+          <Text style={styles.infoValue}>{user ? "Ativa" : "Não autenticada"}</Text>
         </View>
 
       </View>
 
-      {/* Menu */}
+      {/* ========== MENU DE OPÇÕES ========== */}
       <View style={styles.menu}>
 
-        {/* Botão sair */}
+        {/* Botão de logout (com ícone e texto vermelho) */}
         <TouchableOpacity
           style={[styles.menuItem, styles.logout]}
           onPress={handleLogout}
         >
-
-          <Feather
-            name="log-out"
-            size={24}
-            color={colors.expense}
-          />
-
-          <Text
-            style={[
-              styles.menuText,
-              { color: colors.expense }
-            ]}
-          >
-            Sair
-          </Text>
-
+          <Feather name="log-out" size={24} color={colors.expense} />
+          <Text style={[styles.menuText, { color: colors.expense }]}>Sair</Text>
         </TouchableOpacity>
 
       </View>
@@ -143,7 +97,7 @@ export default function Profile() {
   );
 }
 
-// Estilos da tela
+// ========== ESTILOS DA TELA ==========
 const styles = StyleSheet.create({
 
   // Container principal
@@ -152,7 +106,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background
   },
 
-  // Cabeçalho
+  // Cabeçalho (avatar + nome + email)
   header: {
     alignItems: "center",
     padding: spacing.xl,
@@ -161,7 +115,7 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.border
   },
 
-  // Avatar
+  // Avatar circular (fundo colorido com ícone)
   avatar: {
     width: 96,
     height: 96,
@@ -172,7 +126,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md
   },
 
-  // Nome do usuário
+  // Nome do usuário (destaque)
   name: {
     ...typography.title,
     fontSize: 24,
@@ -181,14 +135,14 @@ const styles = StyleSheet.create({
     textAlign: "center"
   },
 
-  // Email do usuário
+  // E-mail do usuário (texto secundário)
   email: {
     ...typography.body,
     color: colors.textSecondary,
     textAlign: "center"
   },
 
-  // Painel de informações
+  // Painel de informações técnicas
   panel: {
     margin: spacing.lg,
     padding: spacing.lg,
@@ -199,12 +153,12 @@ const styles = StyleSheet.create({
     gap: spacing.md
   },
 
-  // Linha de informações
+  // Cada linha do painel (rótulo + valor)
   infoRow: {
     gap: spacing.xs
   },
 
-  // Texto do título
+  // Rótulo da informação
   infoLabel: {
     ...typography.caption,
     color: colors.textSecondary
@@ -216,12 +170,12 @@ const styles = StyleSheet.create({
     color: colors.text
   },
 
-  // Área do menu
+  // Container do menu
   menu: {
     padding: spacing.lg
   },
 
-  // Item do menu
+  // Item do menu (genérico)
   menuItem: {
     flexDirection: "row",
     alignItems: "center",
@@ -233,14 +187,14 @@ const styles = StyleSheet.create({
     borderColor: colors.border
   },
 
-  // Texto do menu
+  // Texto do item do menu
   menuText: {
     ...typography.body,
     color: colors.text,
     flex: 1
   },
 
-  // Botão logout
+  // Botão logout (borda vermelha)
   logout: {
     borderColor: colors.expense
   },

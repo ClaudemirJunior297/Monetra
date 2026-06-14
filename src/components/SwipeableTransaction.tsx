@@ -1,13 +1,28 @@
-/*COMPONENTE SWIPEABLE TRANSACTION - Item de transação com gesto de deslizar*/
+/* COMPONENTE: Item de transação com gesto de deslizar (swipe) */
 
 import { View, Text, StyleSheet, TouchableOpacity, Animated } from "react-native";
 import { GestureHandlerRootView, Swipeable } from "react-native-gesture-handler";
 import { Feather } from "@expo/vector-icons";
-import * as Haptics from "expo-haptics";
-import { colors, spacing, typography } from "@/styles/theme";
 import { Transaction } from "@/types/transaction";
 
-// Função para formatar moeda (padrão brasileiro)
+// Cores fixas
+const COLORS = {
+  card: "#2A2A3A",
+  cardBorder: "#3A3A4A",
+  primary: "#c859ff",
+  expense: "#ef5350",
+  income: "#66bb6a",
+  text: "#FFFFFF",
+  textSecondary: "#888888",
+  white: "#FFFFFF",
+};
+
+const spacing = {
+  xs: 4,
+  sm: 8,
+  md: 16,
+};
+
 const currency = (value: number) =>
   value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
@@ -22,7 +37,7 @@ export function SwipeableTransaction({
   onEdit,
   onDelete,
 }: SwipeableTransactionProps) {
-  // Renderiza o botão de EDITAR (aparece ao deslizar para DIREITA)
+  
   const renderRightActions = (
     progress: Animated.AnimatedInterpolation<number>,
     dragX: Animated.AnimatedInterpolation<number>
@@ -36,20 +51,16 @@ export function SwipeableTransaction({
     return (
       <TouchableOpacity
         style={[styles.actionButton, styles.editAction]}
-        onPress={() => {
-          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-          onEdit();
-        }}
+        onPress={() => onEdit()}
       >
         <Animated.View style={{ transform: [{ scale }] }}>
-          <Feather name="edit-2" size={24} color={colors.white} />
+          <Feather name="edit-2" size={24} color={COLORS.white} />
           <Text style={styles.actionText}>Editar</Text>
         </Animated.View>
       </TouchableOpacity>
     );
   };
 
-  // Renderiza o botão de EXCLUIR (aparece ao deslizar para ESQUERDA)
   const renderLeftActions = (
     progress: Animated.AnimatedInterpolation<number>,
     dragX: Animated.AnimatedInterpolation<number>
@@ -63,13 +74,10 @@ export function SwipeableTransaction({
     return (
       <TouchableOpacity
         style={[styles.actionButton, styles.deleteAction]}
-        onPress={() => {
-          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
-          onDelete();
-        }}
+        onPress={() => onDelete()}
       >
         <Animated.View style={{ transform: [{ scale }] }}>
-          <Feather name="trash-2" size={24} color={colors.white} />
+          <Feather name="trash-2" size={24} color={COLORS.white} />
           <Text style={styles.actionText}>Excluir</Text>
         </Animated.View>
       </TouchableOpacity>
@@ -79,8 +87,8 @@ export function SwipeableTransaction({
   return (
     <GestureHandlerRootView>
       <Swipeable
-        renderRightActions={renderRightActions}    // Deslizar esquerda -> Editar
-        renderLeftActions={renderLeftActions}      // Deslizar direita -> Excluir
+        renderRightActions={renderRightActions}
+        renderLeftActions={renderLeftActions}
         overshootRight={false}
         overshootLeft={false}
       >
@@ -95,8 +103,7 @@ export function SwipeableTransaction({
             style={[
               styles.transactionAmount,
               {
-                color:
-                  transaction.type === "income" ? colors.income : colors.expense,
+                color: transaction.type === "income" ? COLORS.income : COLORS.expense,
               },
             ]}
           >
@@ -109,33 +116,31 @@ export function SwipeableTransaction({
   );
 }
 
-// ========== ESTILOS DO COMPONENTE ==========
 const styles = StyleSheet.create({
   transactionItem: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: colors.card,
+    backgroundColor: COLORS.card,
     padding: spacing.md,
     borderRadius: 12,
     marginBottom: spacing.sm,
     borderWidth: 1,
-    borderColor: colors.cardBorder,
+    borderColor: COLORS.cardBorder,
   },
   transactionInfo: {
     flex: 1,
   },
   transactionDesc: {
-    ...typography.body,
-    color: colors.text,
+    fontSize: 16,
+    color: COLORS.text,
     fontWeight: "600",
     marginBottom: 4,
   },
   transactionMeta: {
-    ...typography.caption,
-    color: colors.textSecondary,
+    fontSize: 12,
+    color: COLORS.textSecondary,
   },
   transactionAmount: {
-    ...typography.subtitle,
     fontSize: 16,
     fontWeight: "700",
   },
@@ -147,16 +152,16 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   editAction: {
-    backgroundColor: colors.primary,
+    backgroundColor: COLORS.primary,
     marginLeft: spacing.xs,
   },
   deleteAction: {
-    backgroundColor: colors.expense,
+    backgroundColor: COLORS.expense,
     marginRight: spacing.xs,
   },
   actionText: {
-    ...typography.caption,
-    color: colors.white,
+    fontSize: 12,
+    color: COLORS.white,
     marginTop: 4,
     fontWeight: "600",
   },
