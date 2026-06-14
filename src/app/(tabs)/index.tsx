@@ -57,12 +57,8 @@ export default function Dashboard() {
   );
 
   return (
-
-    // Tela com rolagem
     <ScrollView
       style={styles.container}
-
-      // Atualizar ao puxar a tela
       refreshControl={
         <RefreshControl
           refreshing={loading}
@@ -71,246 +67,114 @@ export default function Dashboard() {
         />
       }
     >
-
       {/* Cabeçalho */}
       <View style={styles.header}>
+        <Text style={styles.appName}>Monetra</Text>
+        <Text style={styles.balanceLabel}>Saldo disponível</Text>
+        <Text style={styles.balanceValue}>{currency(summary.balance)}</Text>
 
-        {/* Nome do app */}
-        <Text style={styles.appName}>
-          Monetra
-        </Text>
-
-        {/* Texto saldo */}
-        <Text style={styles.balanceLabel}>
-          Saldo disponível
-        </Text>
-
-        {/* Valor do saldo */}
-        <Text style={styles.balanceValue}>
-          {currency(summary.balance)}
-        </Text>
-
-        {/* Área de receitas e despesas */}
         <View style={styles.summaryRow}>
-
           {/* Receitas */}
           <View style={styles.summaryItem}>
-
-            <Text style={styles.summaryLabel}>
-              Receitas
-            </Text>
-
-            <Text
-              style={[
-                styles.summaryValue,
-                { color: colors.success }
-              ]}
-            >
+            <Text style={styles.summaryLabel}>Receitas</Text>
+            <Text style={[styles.summaryValue, { color: colors.success }]}>
               {currency(summary.totalIncome)}
             </Text>
-
           </View>
 
           {/* Despesas */}
           <View style={styles.summaryItem}>
-
-            <Text style={styles.summaryLabel}>
-              Despesas
-            </Text>
-
-            <Text
-              style={[
-                styles.summaryValue,
-                { color: colors.expense }
-              ]}
-            >
+            <Text style={styles.summaryLabel}>Despesas</Text>
+            <Text style={[styles.summaryValue, { color: colors.expense }]}>
               {currency(summary.totalExpense)}
             </Text>
-
           </View>
-
         </View>
-
       </View>
 
       {/* Mensagem de erro */}
-      {error ? (
-        <Text style={styles.error}>
-          {error}
-        </Text>
-      ) : null}
+      {error ? <Text style={styles.error}>{error}</Text> : null}
 
       {/* Loading */}
       {loading && transactions.length === 0 ? (
-
         <View style={styles.stateBox}>
-
           <ActivityIndicator color={colors.primary} />
-
-          <Text style={styles.stateText}>
-            Carregando dados financeiros...
-          </Text>
-
+          <Text style={styles.stateText}>Carregando dados financeiros...</Text>
         </View>
-
       ) : null}
 
       {/* Mensagem sem transações */}
       {!loading && transactions.length === 0 ? (
-
         <View style={styles.stateBox}>
-
-          <Text style={styles.stateTitle}>
-            Nenhuma transação registrada
-          </Text>
-
+          <Text style={styles.stateTitle}>Nenhuma transação registrada</Text>
           <Text style={styles.stateText}>
             Cadastre sua primeira receita ou despesa para iniciar o painel.
           </Text>
-
-          {/* Botão adicionar transação */}
-          <TouchableOpacity
-            style={styles.primaryButton}
-            onPress={() => router.push("/(tabs)/add")}
-          >
-
-            <Text style={styles.primaryButtonText}>
-              Registrar transação
-            </Text>
-
+          <TouchableOpacity style={styles.primaryButton} onPress={() => router.push("/(tabs)/add")}>
+            <Text style={styles.primaryButtonText}>Registrar transação</Text>
           </TouchableOpacity>
-
         </View>
-
       ) : null}
 
       {/* Categorias */}
       {categoryEntries.length > 0 ? (
-
         <View style={styles.section}>
-
-          <Text style={styles.sectionTitle}>
-            Gastos por categoria
-          </Text>
-
-          {/* Percorre categorias */}
+          <Text style={styles.sectionTitle}>Gastos por categoria</Text>
           {categoryEntries.map(([category, amount]) => {
-
-            // Calcula porcentagem
-            const percentage =
-              summary.totalExpense > 0
-                ? ((amount || 0) / summary.totalExpense) * 100
-                : 0;
+            const percentage = summary.totalExpense > 0
+              ? ((amount || 0) / summary.totalExpense) * 100
+              : 0;
 
             return (
-
               <View key={category} style={styles.categoryItem}>
-
-                {/* Nome e porcentagem */}
                 <View style={styles.categoryHeader}>
-
-                  <Text style={styles.categoryName}>
-                    {category}
-                  </Text>
-
-                  <Text style={styles.categoryPercentage}>
-                    {percentage.toFixed(0)}%
-                  </Text>
-
+                  <Text style={styles.categoryName}>{category}</Text>
+                  <Text style={styles.categoryPercentage}>{percentage.toFixed(0)}%</Text>
                 </View>
-
-                {/* Barra de progresso */}
                 <View style={styles.progressBar}>
-
-                  <View
-                    style={[
-                      styles.progressFill,
-                      {
-                        width: `${Math.min(percentage, 100)}%`
-                      }
-                    ]}
-                  />
-
+                  <View style={[styles.progressFill, { width: `${Math.min(percentage, 100)}%` }]} />
                 </View>
-
-                {/* Valor da categoria */}
-                <Text style={styles.categoryAmount}>
-                  {currency(amount || 0)}
-                </Text>
-
+                <Text style={styles.categoryAmount}>{currency(amount || 0)}</Text>
               </View>
             );
           })}
         </View>
-
       ) : null}
 
       {/* Transações recentes */}
       {recentTransactions.length > 0 ? (
-
         <View style={styles.section}>
-
-          <Text style={styles.sectionTitle}>
-            Transações recentes
-          </Text>
-
-          {/* Lista de transações */}
+          <Text style={styles.sectionTitle}>Transações recentes</Text>
           {recentTransactions.map((transaction) => (
-
-            <View
-              key={transaction.id}
-              style={styles.transactionItem}
-            >
-
-              {/* Informações da transação */}
+            <View key={transaction.id} style={styles.transactionItem}>
               <View style={styles.transactionInfo}>
-
-                <Text style={styles.transactionDesc}>
-                  {transaction.description}
-                </Text>
-
+                <Text style={styles.transactionDesc}>{transaction.description}</Text>
                 <Text style={styles.transactionCategory}>
                   {transaction.category} - {transaction.date.toLocaleDateString("pt-BR")}
                 </Text>
-
               </View>
-
-              {/* Valor da transação */}
-              <Text
-                style={[
-                  styles.transactionAmount,
-                  {
-                    color:
-                      transaction.type === "income"
-                        ? colors.success
-                        : colors.expense
-                  },
-                ]}
-              >
+              <Text style={[
+                styles.transactionAmount,
+                { color: transaction.type === "income" ? colors.success : colors.expense }
+              ]}>
                 {transaction.type === "income" ? "+ " : "- "}
                 {currency(transaction.amount)}
               </Text>
-
             </View>
           ))}
         </View>
-
       ) : null}
 
     </ScrollView>
   );
 }
 
-// Estilos da tela
+// ========== ESTILOS DA TELA ==========
 const styles = StyleSheet.create({
-
-  // Container principal
   container: {
     flex: 1,
     backgroundColor: colors.background
   },
-
-  // Cabeçalho
   header: {
     backgroundColor: colors.card,
     padding: spacing.lg,
@@ -318,155 +182,109 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: colors.border
   },
-
-  // Nome do app
   appName: {
     ...typography.title,
     color: colors.primary,
     marginBottom: spacing.lg
   },
-
-  // Texto saldo
   balanceLabel: {
     ...typography.caption,
     color: colors.textSecondary,
     marginBottom: spacing.xs
   },
-
-  // Valor saldo
   balanceValue: {
     ...typography.title,
     fontSize: 42,
     color: colors.white,
     marginBottom: spacing.lg
   },
-
-  // Linha resumo
   summaryRow: {
     flexDirection: "row",
     gap: spacing.md,
     marginTop: spacing.md
   },
-
-  // Item resumo
   summaryItem: {
     flex: 1
   },
-
-  // Texto resumo
   summaryLabel: {
     ...typography.caption,
     color: colors.textSecondary
   },
-
-  // Valor resumo
   summaryValue: {
     ...typography.subtitle,
     fontSize: 18
   },
-
-  // Mensagem erro
   error: {
     color: colors.error,
     padding: spacing.lg
   },
-
-  // Área estados
   stateBox: {
     padding: spacing.xl,
     alignItems: "center",
     gap: spacing.md
   },
-
-  // Título vazio
   stateTitle: {
     ...typography.subtitle,
     color: colors.white,
     textAlign: "center"
   },
-
-  // Texto vazio
   stateText: {
     ...typography.body,
     color: colors.textSecondary,
     textAlign: "center"
   },
-
-  // Botão principal
   primaryButton: {
     backgroundColor: colors.primary,
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
     borderRadius: 8
   },
-
-  // Texto botão
   primaryButtonText: {
     color: colors.white,
     fontWeight: "700"
   },
-
-  // Seção
   section: {
     padding: spacing.lg,
     borderBottomWidth: 1,
     borderBottomColor: colors.border
   },
-
-  // Título seção
   sectionTitle: {
     ...typography.subtitle,
     color: colors.white,
     marginBottom: spacing.md
   },
-
-  // Item categoria
   categoryItem: {
     marginBottom: spacing.md
   },
-
-  // Cabeçalho categoria
   categoryHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     marginBottom: spacing.xs
   },
-
-  // Nome categoria
   categoryName: {
     ...typography.body,
     color: colors.text
   },
-
-  // Porcentagem
   categoryPercentage: {
     ...typography.body,
     color: colors.textSecondary
   },
-
-  // Valor categoria
   categoryAmount: {
     ...typography.caption,
     color: colors.textSecondary,
     marginTop: spacing.xs
   },
-
-  // Barra progresso
   progressBar: {
     height: 8,
     backgroundColor: colors.border,
     borderRadius: 4,
     overflow: "hidden"
   },
-
-  // Preenchimento barra
   progressFill: {
     height: "100%",
     borderRadius: 4,
     backgroundColor: colors.category
   },
-
-  // Item transação
   transactionItem: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -476,28 +294,20 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.border,
     gap: spacing.md
   },
-
-  // Área informações
   transactionInfo: {
     flex: 1
   },
-
-  // Descrição
   transactionDesc: {
     ...typography.body,
     color: colors.white
   },
-
-  // Categoria e data
   transactionCategory: {
     ...typography.caption,
     color: colors.textSecondary,
     marginTop: 2
   },
-
-  // Valor transação
   transactionAmount: {
     ...typography.body,
     fontWeight: "600"
-  },
+  }
 });

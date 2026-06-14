@@ -1,149 +1,213 @@
-import { Transaction, TransactionPayload } from "@/types/transaction";
-import Constants from "expo-constants";
-import { Platform } from "react-native";
+/* SERVIÇO DE API - VERSÃO MOCK (dados falsos para teste) */
 
+import { Transaction, TransactionPayload } from "@/types/transaction";
+
+// Interface do usuário
 export interface User {
   id: string;
   name: string;
   email: string;
 }
 
-type ApiTransaction = {
-  id: number;
-  description: string;
-  category: string;
-  amount: number;
-  type: "RECEITA" | "DESPESA";
-  date: string;
-};
+// ========== DADOS MOCK ==========
 
-const getBaseUrl = () => {
-  const envUrl = process.env.EXPO_PUBLIC_API_URL;
-  if (envUrl) {
-    return envUrl.replace(/\/$/, "");
-  }
+// Usuários cadastrados
+const MOCK_USERS: User[] = [
+  { id: "1", name: "João Silva", email: "joao@email.com" },
+  { id: "2", name: "Maria Santos", email: "maria@email.com" },
+  { id: "3", name: "Carlos Oliveira", email: "carlos@email.com" },
+];
 
-  if (Platform.OS === "web") {
-    try {
-      const { hostname } = window.location;
-      if (hostname === "localhost" || hostname === "127.0.0.1" || hostname === "0.0.0.0") {
-        return `http://${hostname}:8080`;
-      }
-    } catch {
-      // ignore if window is not available
-    }
-  }
+// Transações (começa vazio, vai preenchendo conforme o usuário adiciona)
+let MOCK_TRANSACTIONS: any[] = [
+  {
+    id: 1,
+    description: "Salário",
+    category: "Renda",
+    amount: 5000,
+    type: "RECEITA",
+    date: new Date().toISOString(),
+  },
+  {
+    id: 2,
+    description: "Supermercado",
+    category: "Alimentação",
+    amount: 350.50,
+    type: "DESPESA",
+    date: new Date().toISOString(),
+  },
+  {
+    id: 3,
+    description: "Cinema",
+    category: "Lazer",
+    amount: 45.00,
+    type: "DESPESA",
+    date: new Date().toISOString(),
+  },
+  {
+    id: 4,
+    description: "Uber",
+    category: "Transporte",
+    amount: 25.90,
+    type: "DESPESA",
+    date: new Date().toISOString(),
+  },
+  {
+    id: 5,
+    description: "Freelance",
+    category: "Renda Extra",
+    amount: 1200,
+    type: "RECEITA",
+    date: new Date().toISOString(),
+  },
+];
 
-  // Default to expo host detection (useful for Expo Go) or local development
-  const hostUri = Constants.expoConfig?.hostUri || Constants.manifest2?.extra?.expoGo?.debuggerHost;
-  const host = hostUri?.split(":")[0];
-  if (host) {
-    return `http://${host}:8080`;
-  }
+// Contador para IDs das transações
+let nextTransactionId = MOCK_TRANSACTIONS.length + 1;
 
-  return Platform.OS === "android" ? "http://10.0.2.2:8080" : "http://localhost:8080";
-};
+// ========== FUNÇÕES AUXILIARES ==========
 
-const API_URL = getBaseUrl();
+// Delay para simular requisição de rede
+const delay = (ms: number = 800) => new Promise(resolve => setTimeout(resolve, ms));
 
-async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
-  let response: Response;
-  try {
-    response = await fetch(`${API_URL}${path}`, {
-      ...options,
-      headers: {
-        "Content-Type": "application/json",
-        ...options.headers,
-      },
-    });
-  } catch (e: any) {
-    const errMsg = e && e.message ? e.message : String(e);
-    throw new Error(
-      `Falha de comunicação com o servidor. Verifique se o backend está em execução e se a URL da API está correta. (${errMsg})`
-    );
-  }
+// Converte tipo do frontend para o backend
+const toApiType = (type: string) => (type === "income" ? "RECEITA" : "DESPESA");
 
-  const responseText = await response.text();
-  let responseBody: any = null;
-  if (responseText) {
-    try {
-      responseBody = JSON.parse(responseText);
-    } catch {
-      responseBody = responseText;
-    }
-  }
+// Converte tipo do backend para o frontend
+const fromApiType = (type: string) => (type === "RECEITA" ? "income" : "expense");
 
-  if (!response.ok) {
-    let message = "Não foi possível concluir a operação.";
-    if (responseBody && typeof responseBody === "object") {
-      message = responseBody.erro || responseBody.message || message;
-    } else if (typeof responseText === "string" && responseText.trim()) {
-      message = responseText;
-    }
-    throw new Error(message);
-  }
-
-  if (response.status === 204) {
-    return undefined as T;
-  }
-
-  return responseBody as T;
-}
-
-const toApiType = (type: Transaction["type"]) => (type === "income" ? "RECEITA" : "DESPESA");
-
-const fromApiTransaction = (transaction: ApiTransaction): Transaction => ({
+// Converte transação do backend para o frontend
+const fromApiTransaction = (transaction: any): Transaction => ({
   id: String(transaction.id),
   description: transaction.description,
-  category: transaction.category as Transaction["category"],
+  category: transaction.category as any,
   amount: transaction.amount,
-  type: transaction.type === "RECEITA" ? "income" : "expense",
-  date: transaction.date ? new Date(transaction.date) : new Date(),
+  type: fromApiType(transaction.type),
+  date: new Date(transaction.date),
 });
 
+// Converte transação do frontend para o backend
 const toApiTransaction = (payload: TransactionPayload) => ({
   description: payload.description,
   category: payload.category,
   amount: payload.amount,
   type: toApiType(payload.type),
-  date: payload.date?.toISOString(),
+  date: payload.date?.toISOString() || new Date().toISOString(),
 });
 
+// ========== API MOCK ==========
+
 export const api = {
-  baseUrl: API_URL,
-  async login(email: string, password: string) {
-    const user = await request<{ id: number; name: string; email: string }>("/api/auth/login", {
-      method: "POST",
-      body: JSON.stringify({ email, password }),
-    });
-    return { ...user, id: String(user.id) } satisfies User;
+  baseUrl: "MOCK API (sem backend - dados locais)",
+
+  // LOGIN
+  async login(email: string, password: string): Promise<User> {
+    console.log(`[MOCK] Tentativa de login: ${email}`);
+    await delay();
+
+    const user = MOCK_USERS.find(u => u.email.toLowerCase() === email.toLowerCase());
+
+    if (!user) {
+      throw new Error("Usuário não encontrado");
+    }
+
+    // Qualquer senha com mais de 3 caracteres funciona (mock)
+    if (!password || password.length < 3) {
+      throw new Error("Senha incorreta");
+    }
+
+    console.log(`[MOCK] Login bem-sucedido: ${user.name}`);
+    return user;
   },
-  async register(name: string, email: string, password: string) {
-    const user = await request<{ id: number; name: string; email: string }>("/api/auth/register", {
-      method: "POST",
-      body: JSON.stringify({ name, email, password }),
-    });
-    return { ...user, id: String(user.id) } satisfies User;
+
+  // CADASTRO
+  async register(name: string, email: string, password: string): Promise<User> {
+    console.log(`[MOCK] Tentativa de cadastro: ${email}`);
+    await delay();
+
+    const existingUser = MOCK_USERS.find(u => u.email.toLowerCase() === email.toLowerCase());
+
+    if (existingUser) {
+      throw new Error("E-mail já cadastrado");
+    }
+
+    if (!name || name.trim().length < 3) {
+      throw new Error("Nome deve ter pelo menos 3 caracteres");
+    }
+
+    if (!email || !email.includes("@")) {
+      throw new Error("E-mail inválido");
+    }
+
+    if (!password || password.length < 6) {
+      throw new Error("Senha deve ter pelo menos 6 caracteres");
+    }
+
+    const newUser: User = {
+      id: String(MOCK_USERS.length + 1),
+      name: name.trim(),
+      email: email.trim().toLowerCase(),
+    };
+
+    MOCK_USERS.push(newUser);
+    console.log(`[MOCK] Cadastro bem-sucedido: ${newUser.name}`);
+    return newUser;
   },
-  async getTransactions() {
-    const transactions = await request<ApiTransaction[]>("/api/transactions");
-    return transactions.map(fromApiTransaction);
+
+  // BUSCAR TRANSAÇÕES
+  async getTransactions(): Promise<Transaction[]> {
+    console.log(`[MOCK] Buscando transações...`);
+    await delay(500);
+    return MOCK_TRANSACTIONS.map(fromApiTransaction);
   },
-  async createTransaction(payload: TransactionPayload) {
-    const transaction = await request<ApiTransaction>("/api/transactions", {
-      method: "POST",
-      body: JSON.stringify(toApiTransaction(payload)),
-    });
-    return fromApiTransaction(transaction);
+
+  // CRIAR TRANSAÇÃO
+  async createTransaction(payload: TransactionPayload): Promise<Transaction> {
+    console.log(`[MOCK] Criando transação: ${payload.description}`);
+    await delay();
+
+    const newTransaction = {
+      id: nextTransactionId++,
+      ...toApiTransaction(payload),
+    };
+
+    MOCK_TRANSACTIONS.unshift(newTransaction);
+    console.log(`[MOCK] Transação criada com ID: ${newTransaction.id}`);
+    return fromApiTransaction(newTransaction);
   },
-  async updateTransaction(id: string, payload: TransactionPayload) {
-    const transaction = await request<ApiTransaction>(`/api/transactions/${id}`, {
-      method: "PUT",
-      body: JSON.stringify(toApiTransaction(payload)),
-    });
-    return fromApiTransaction(transaction);
+
+  // ATUALIZAR TRANSAÇÃO
+  async updateTransaction(id: string, payload: TransactionPayload): Promise<Transaction> {
+    console.log(`[MOCK] Atualizando transação ID: ${id}`);
+    await delay();
+
+    const index = MOCK_TRANSACTIONS.findIndex(t => String(t.id) === id);
+
+    if (index === -1) {
+      throw new Error("Transação não encontrada");
+    }
+
+    MOCK_TRANSACTIONS[index] = {
+      ...MOCK_TRANSACTIONS[index],
+      ...toApiTransaction(payload),
+    };
+
+    console.log(`[MOCK] Transação atualizada ID: ${id}`);
+    return fromApiTransaction(MOCK_TRANSACTIONS[index]);
   },
-  async deleteTransaction(id: string) {
-    await request<void>(`/api/transactions/${id}`, { method: "DELETE" });
+
+  // DELETAR TRANSAÇÃO
+  async deleteTransaction(id: string): Promise<void> {
+    console.log(`[MOCK] Deletando transação ID: ${id}`);
+    await delay();
+
+    const index = MOCK_TRANSACTIONS.findIndex(t => String(t.id) === id);
+
+    if (index === -1) {
+      throw new Error("Transação não encontrada");
+    }
+
+    MOCK_TRANSACTIONS.splice(index, 1);
+    console.log(`[MOCK] Transação deletada ID: ${id}`);
   },
 };
