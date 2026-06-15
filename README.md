@@ -159,6 +159,3 @@ MIT License — sinta-se livre para usar, modificar e distribuir.
 ---
 
 > Feito com 💜 por estudantes de ADS
-```
-
-Esse README está pronto para ser colocado na raiz do seu projeto. Você pode personalizar o link do repositório, as badges (por exemplo, adicionar shields.io) e incluir imagens das telas se desejar.
