@@ -18,7 +18,7 @@ import { useAccent, ACCENTS } from "@/contexts/AccentContext";
 import { useState, useRef, useEffect } from "react";
 
 export default function Profile() {
-  const { user, signOut } = useAuth();
+  const { user, signOut, updateName } = useAuth() as any;
   const { isDark, toggleTheme } = useTheme();
   const { accent, accentColor, setAccent } = useAccent();
   const [editing, setEditing] = useState(false);
@@ -48,6 +48,7 @@ export default function Profile() {
       Alert.alert("Nome invalido", "O nome deve ter pelo menos 3 caracteres.");
       return;
     }
+    updateName(name.trim());
     setEditing(false);
     Alert.alert("Salvo!", "Nome atualizado.");
   };

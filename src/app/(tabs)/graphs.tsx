@@ -1,272 +1,158 @@
-// Função: Mostrar gráficos e indicadores das transações
-
-// Importa componentes do React Native
-import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
-
-// Importa hook para atualizar ao abrir a tela
+import { ActivityIndicator, RefreshControl, ScrollView, Text, View, Dimensions } from "react-native";
 import { useFocusEffect } from "expo-router";
-
-// Importa hook para otimizar funções
 import { useCallback } from "react";
-
-// Importa cores e estilos
-import { spacing, typography } from "@/styles/theme";
+import Svg, { Path, Circle, G } from "react-native-svg";
 import { useColors } from "@/hooks/useColors";
-
-// Importa o contexto das transações
 import { useTransactions } from "@/contexts/TransactionContext";
 
-// Função: Formatar valor em moeda brasileira
-const currency = (value: number) =>
-  value.toLocaleString("pt-BR", {
-    style: "currency",
-    currency: "BRL"
+const { width } = Dimensions.get("window");
+const PIZZA_SIZE = width * 0.6;
+const RADIUS = PIZZA_SIZE / 2;
+const CENTER = RADIUS;
+
+const currency = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+
+const SLICE_COLORS = [
+  "#c859ff", "#4FC3F7", "#66BB6A", "#FF8C42",
+  "#F48FB1", "#FFD54F", "#80CBC4", "#EF9A9A",
+];
+
+function polarToCartesian(cx: number, cy: number, r: number, angle: number) {
+  const rad = ((angle - 90) * Math.PI) / 180;
+  return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
+}
+
+function slicePath(cx: number, cy: number, r: number, startAngle: number, endAngle: number) {
+  const start = polarToCartesian(cx, cy, r, endAngle);
+  const end = polarToCartesian(cx, cy, r, startAngle);
+  const large = endAngle - startAngle > 180 ? 1 : 0;
+  return `M ${cx} ${cy} L ${start.x} ${start.y} A ${r} ${r} 0 ${large} 0 ${end.x} ${end.y} Z`;
+}
+
+function PizzaChart({ entries, total }: { entries: [string, number][]; total: number }) {
+  if (entries.length === 0) return null;
+
+  let currentAngle = 0;
+  const slices = entries.map(([cat, amt], i) => {
+    const pct = ((amt || 0) / total) * 100;
+    const angle = (pct / 100) * 360;
+    const path = slicePath(CENTER, CENTER, RADIUS - 20, currentAngle, currentAngle + angle);
+    currentAngle += angle;
+    return { cat, amt, pct, path, color: SLICE_COLORS[i % SLICE_COLORS.length] };
   });
 
-// Função principal da tela
+  return (
+    <View style={{ alignItems: "center", marginVertical: 16 }}>
+      <Svg width={PIZZA_SIZE} height={PIZZA_SIZE}>
+        <G>
+          {slices.map((slice, i) => (
+            <Path key={i} d={slice.path} fill={slice.color} stroke="#0D0D18" strokeWidth={2} />
+          ))}
+          <Circle cx={CENTER} cy={CENTER} r={RADIUS * 0.38} fill="#0D0D18" />
+        </G>
+      </Svg>
+    </View>
+  );
+}
+
 export default function Graphs() {
   const c = useColors();
-
-  // Pega dados e funções das transações
   const { summary, transactions, loading, error, refresh } = useTransactions();
 
-  // Organiza categorias do maior valor para o menor
-  const entries = Object.entries(summary.categoryBreakdown).sort(
-    ([, a], [, b]) => (b || 0) - (a || 0)
-  );
+  const entries = Object.entries(summary.categoryBreakdown).sort(([, a], [, b]) => (b || 0) - (a || 0));
 
-  // Atualiza os dados ao entrar na tela
-  useFocusEffect(
-    useCallback(() => {
-      refresh();
-    }, [refresh])
-  );
+  useFocusEffect(useCallback(() => { refresh(); }, [refresh]));
 
-
-
-  const styles = StyleSheet.create({
-
-  container: {
-    flex: 1,
-    backgroundColor: c.bg
-  },
-
-  header: {
-    backgroundColor: c.card,
-    padding: spacing.lg,
-    paddingTop: spacing.xxl,
-    alignItems: "center",
-    borderBottomWidth: 1,
-    borderBottomColor: c.border
-  },
-
-  headerTitle: {
-    ...typography.title,
-    color: c.text
-  },
-
-  headerSubtitle: {
-    ...typography.body,
-    color: c.sub,
-    marginTop: spacing.xs,
-    textAlign: "center"
-  },
-
-  // CORRIGIDO: alert -> error
-  error: {
-    color: c.error,
-    padding: spacing.lg
-  },
-
-  totalCard: {
-    backgroundColor: c.card,
-    margin: spacing.lg,
-    padding: spacing.lg,
-    borderRadius: 8,
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: c.border
-  },
-
-  totalLabel: {
-    ...typography.body,
-    color: c.sub
-  },
-
-  totalValue: {
-    ...typography.title,
-    fontSize: 34,
-    color: c.expense,
-    marginTop: spacing.sm
-  },
-
-  totalHint: {
-    ...typography.caption,
-    color: c.sub,
-    marginTop: spacing.sm
-  },
-
-  chartContainer: {
-    padding: spacing.lg
-  },
-
-  sectionTitle: {
-    ...typography.subtitle,
-    color: c.text,
-    marginBottom: spacing.md
-  },
-
-  categoryItem: {
-    marginBottom: spacing.md
-  },
-
-  categoryHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: spacing.xs
-  },
-
-  colorDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    marginRight: spacing.sm,
-    backgroundColor: c.primary
-  },
-
-  categoryName: {
-    ...typography.body,
-    color: c.text,
-    flex: 1
-  },
-
-  categoryPercentage: {
-    ...typography.body,
-    color: c.sub
-  },
-
-  categoryAmount: {
-    ...typography.caption,
-    color: c.sub,
-    marginTop: spacing.xs
-  },
-
-  progressBar: {
-    height: 8,
-    backgroundColor: c.border,
-    borderRadius: 4,
-    overflow: "hidden"
-  },
-
-  progressFill: {
-    height: "100%",
-    borderRadius: 4,
-    backgroundColor: c.primary
-  },
-
-  stateBox: {
-    padding: spacing.xl,
-    alignItems: "center",
-    gap: spacing.sm
-  },
-
-  emptyTitle: {
-    ...typography.subtitle,
-    color: c.text,
-    textAlign: "center"
-  },
-
-  emptyText: {
-    ...typography.body,
-    color: c.sub,
-    textAlign: "center"
-  },
-});
+  const SLICE_COLORS_LOCAL = [
+    "#c859ff", "#4FC3F7", "#66BB6A", "#FF8C42",
+    "#F48FB1", "#FFD54F", "#80CBC4", "#EF9A9A",
+  ];
 
   return (
+    <ScrollView style={{ flex: 1, backgroundColor: c.bg }}
+      contentContainerStyle={{ paddingBottom: 100 }}
+      refreshControl={<RefreshControl refreshing={loading} onRefresh={refresh} tintColor={c.primary} />}>
 
-    // Tela com rolagem
-    <ScrollView
-      style={styles.container}
-
-      // Atualização ao puxar a tela
-      refreshControl={
-        <RefreshControl
-          refreshing={loading}
-          onRefresh={refresh}
-          tintColor={c.primary}
-        />
-      }
-    >
-
-      {/* Cabeçalho */}
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Indicadores</Text>
-        <Text style={styles.headerSubtitle}>Baseados nas transações cadastradas</Text>
+      {/* Header */}
+      <View style={{ backgroundColor: c.card, padding: 24, paddingTop: 52, alignItems: "center", borderBottomWidth: 1, borderBottomColor: c.border }}>
+        <Text style={{ fontSize: 24, fontWeight: "800", color: c.text }}>Indicadores</Text>
+        <Text style={{ fontSize: 13, color: c.sub, marginTop: 4 }}>Baseados nas transacoes cadastradas</Text>
       </View>
 
-      {/* Mensagem de erro */}
-      {error ? <Text style={styles.error}>{error}</Text> : null}
+      {error ? <Text style={{ color: c.error, padding: 16 }}>{error}</Text> : null}
 
-      {/* Card do total de despesas */}
-      <View style={styles.totalCard}>
-        <Text style={styles.totalLabel}>Despesas registradas</Text>
-        <Text style={styles.totalValue}>{currency(summary.totalExpense)}</Text>
-        <Text style={styles.totalHint}>{transactions.length} transações no banco</Text>
+      {/* Cards resumo */}
+      <View style={{ flexDirection: "row", gap: 12, padding: 16 }}>
+        <View style={{ flex: 1, backgroundColor: c.card, borderRadius: 16, padding: 16, borderWidth: 1, borderColor: c.border, alignItems: "center" }}>
+          <Text style={{ fontSize: 11, color: c.sub, textTransform: "uppercase", letterSpacing: 0.5 }}>Despesas</Text>
+          <Text style={{ fontSize: 20, fontWeight: "800", color: "#ef5350", marginTop: 4 }}>{currency(summary.totalExpense)}</Text>
+        </View>
+        <View style={{ flex: 1, backgroundColor: c.card, borderRadius: 16, padding: 16, borderWidth: 1, borderColor: c.border, alignItems: "center" }}>
+          <Text style={{ fontSize: 11, color: c.sub, textTransform: "uppercase", letterSpacing: 0.5 }}>Transacoes</Text>
+          <Text style={{ fontSize: 20, fontWeight: "800", color: c.primary, marginTop: 4 }}>{transactions.length}</Text>
+        </View>
       </View>
 
-      {/* Loading */}
       {loading && transactions.length === 0 ? (
-        <View style={styles.stateBox}>
-          <ActivityIndicator color={c.primary} />
+        <View style={{ alignItems: "center", paddingVertical: 40 }}>
+          <ActivityIndicator color={c.primary} size="large" />
         </View>
       ) : null}
 
-      {/* Mensagem quando não existem despesas */}
       {!loading && entries.length === 0 ? (
-        <View style={styles.stateBox}>
-          <Text style={styles.emptyTitle}>Sem despesas para analisar</Text>
-          <Text style={styles.emptyText}>Os gráficos aparecem automaticamente quando houver despesas salvas.</Text>
+        <View style={{ alignItems: "center", paddingVertical: 48, gap: 8 }}>
+          <Text style={{ fontSize: 17, fontWeight: "700", color: c.text }}>Sem despesas para analisar</Text>
+          <Text style={{ fontSize: 13, color: c.sub, textAlign: "center", paddingHorizontal: 32 }}>Os graficos aparecem quando houver despesas salvas.</Text>
         </View>
       ) : null}
 
-      {/* Lista de categorias */}
       {entries.length > 0 ? (
-        <View style={styles.chartContainer}>
-          <Text style={styles.sectionTitle}>Distribuição por categoria</Text>
+        <View style={{ paddingHorizontal: 16 }}>
+          <Text style={{ fontSize: 16, fontWeight: "700", color: c.text, marginBottom: 4 }}>Distribuicao por categoria</Text>
+          <Text style={{ fontSize: 12, color: c.sub, marginBottom: 16 }}>Total: {currency(summary.totalExpense)}</Text>
 
-          {entries.map(([category, amount]) => {
+          {/* GRAFICO DE PIZZA */}
+          <View style={{ backgroundColor: c.card, borderRadius: 20, borderWidth: 1, borderColor: c.border, alignItems: "center", paddingVertical: 16, marginBottom: 20 }}>
+            <PizzaChart entries={entries} total={summary.totalExpense} />
 
-            // Calcula porcentagem da categoria
-            const percentage = summary.totalExpense > 0
-              ? ((amount || 0) / summary.totalExpense) * 100
-              : 0;
+            {/* Legenda */}
+            <View style={{ width: "100%", paddingHorizontal: 20, gap: 8 }}>
+              {entries.map(([cat, amt], i) => {
+                const pct = summary.totalExpense > 0 ? (((amt || 0) / summary.totalExpense) * 100).toFixed(0) : "0";
+                return (
+                  <View key={cat} style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+                    <View style={{ width: 12, height: 12, borderRadius: 3, backgroundColor: SLICE_COLORS_LOCAL[i % SLICE_COLORS_LOCAL.length] }} />
+                    <Text style={{ flex: 1, fontSize: 13, color: c.text }}>{cat}</Text>
+                    <Text style={{ fontSize: 13, color: c.sub }}>{pct}%</Text>
+                    <Text style={{ fontSize: 13, fontWeight: "600", color: c.text }}>{currency(amt || 0)}</Text>
+                  </View>
+                );
+              })}
+            </View>
+          </View>
 
-            return (
-              <View key={category} style={styles.categoryItem}>
-
-                {/* Cabeçalho da categoria */}
-                <View style={styles.categoryHeader}>
-                  <View style={styles.colorDot} />
-                  <Text style={styles.categoryName}>{category}</Text>
-                  <Text style={styles.categoryPercentage}>{percentage.toFixed(0)}%</Text>
+          {/* Barras */}
+          <Text style={{ fontSize: 16, fontWeight: "700", color: c.text, marginBottom: 12 }}>Detalhamento</Text>
+          <View style={{ backgroundColor: c.card, borderRadius: 20, overflow: "hidden", borderWidth: 1, borderColor: c.border, marginBottom: 20 }}>
+            {entries.map(([cat, amt], i) => {
+              const pct = summary.totalExpense > 0 ? Math.min(((amt || 0) / summary.totalExpense) * 100, 100) : 0;
+              const color = SLICE_COLORS_LOCAL[i % SLICE_COLORS_LOCAL.length];
+              return (
+                <View key={cat} style={{ padding: 14, borderBottomWidth: i < entries.length - 1 ? 1 : 0, borderBottomColor: c.border }}>
+                  <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 6 }}>
+                    <Text style={{ fontSize: 13, fontWeight: "600", color: c.text }}>{cat}</Text>
+                    <Text style={{ fontSize: 13, color: c.sub }}>{currency(amt || 0)}</Text>
+                  </View>
+                  <View style={{ height: 6, backgroundColor: c.border, borderRadius: 3, overflow: "hidden" }}>
+                    <View style={{ width: `${pct}%`, height: "100%", backgroundColor: color, borderRadius: 3 }} />
+                  </View>
                 </View>
-
-                {/* Barra de progresso */}
-                <View style={styles.progressBar}>
-                  <View style={[styles.progressFill, { width: `${Math.min(percentage, 100)}%` }]} />
-                </View>
-
-                {/* Valor da categoria */}
-                <Text style={styles.categoryAmount}>{currency(amount || 0)}</Text>
-              </View>
-            );
-          })}
+              );
+            })}
+          </View>
         </View>
       ) : null}
 
     </ScrollView>
   );
 }
-
-// Estilos da tela

@@ -12,6 +12,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   TouchableWithoutFeedback,
+  TouchableOpacity,
   Keyboard,
 } from "react-native";
 import { Link, router } from "expo-router";
@@ -154,6 +155,10 @@ export default function Login() {
                 loading={loading}
               />
             </View>
+
+            <TouchableOpacity onPress={() => router.push("/forgot-password")} style={{ alignItems: "center", marginTop: -4 }}>
+              <Text style={{ color: c.sub, fontSize: 13 }}>Esqueci minha senha</Text>
+            </TouchableOpacity>
 
             {/* Link para tela de cadastro */}
             <Text style={styles.footerText}>

@@ -8,6 +8,7 @@ interface AuthContextData {
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (name: string, email: string, password: string) => Promise<void>;
   signOut: () => void;
+  updateName: (name: string) => void;
 }
 
 const AuthContext = createContext<AuthContextData>({} as AuthContextData);
@@ -40,13 +41,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const updateName = (name: string) => {
+    if (user) setUser({ ...user, name });
+  };
+
   const signOut = () => {
     setUser(null);
     setTimeout(() => router.replace("/login"), 300);
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, signIn, signUp, signOut }}>
+    <AuthContext.Provider value={{ user, loading, signIn, signUp, signOut, updateName }}>
       {children}
     </AuthContext.Provider>
   );
