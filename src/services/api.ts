@@ -81,6 +81,15 @@ export const api = {
     return fromApiTransaction(data);
   },
 
+  async resetPassword(email: string, newPassword: string): Promise<void> {
+    const res = await fetch(`${BASE_URL}/api/auth/reset-password`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, newPassword }),
+    });
+    if (!res.ok) throw new Error("E-mail nao encontrado");
+  },
+
   async deleteTransaction(id: string): Promise<void> {
     const res = await fetch(`${BASE_URL}/api/transactions/${id}`, {
       method: "DELETE",

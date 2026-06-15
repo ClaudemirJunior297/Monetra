@@ -41,6 +41,16 @@ public class AuthService {
         return user;
     }
 
+    public AppUser resetPassword(String email, String newPassword) {
+        validateEmail(email);
+        validatePassword(newPassword);
+        String normalizedEmail = email.trim().toLowerCase();
+        AppUser user = userRepository.findByEmailIgnoreCase(normalizedEmail)
+                .orElseThrow(() -> new IllegalArgumentException("E-mail nao encontrado"));
+        user.setPasswordHash(hash(newPassword));
+        return userRepository.save(user);
+    }
+
     private void validateName(String name) {
         if (name == null || name.trim().length() < 3) {
             throw new IllegalArgumentException("Nome deve ter pelo menos 3 caracteres");
