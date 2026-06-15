@@ -1,0 +1,3 @@
+{
+  "postStartCommand": "docker start monetra-mysql && sleep 5 && cd /workspaces/Monetra/backend && mvn spring-boot:run &"
+}
