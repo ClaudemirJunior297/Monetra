@@ -249,7 +249,7 @@ const getStyles = (c: any) =>
     },
     subtitle: {
       fontSize: 14,
-      color: c.textSecondary,
+      color: "#FFFFFF",
       textAlign: "center",
       marginBottom: 32,
     },
@@ -259,7 +259,7 @@ const getStyles = (c: any) =>
     footerText: {
       textAlign: "center",
       marginTop: 24,
-      color: c.textSecondary,
+      color: "#FFFFFF",
     },
     footerLink: {
       color: c.primary,

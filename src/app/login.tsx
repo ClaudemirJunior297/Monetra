@@ -1,5 +1,5 @@
 /**
- * TELA DE LOGIN - Com logo e cores atualizadas
+ * TELA DE LOGIN 
  */
 
 import { useState, useEffect } from "react";
@@ -196,7 +196,7 @@ const getStyles = (c: any) =>
     },
     subtitle: {
       fontSize: 14,
-      color: c.sub,
+      color: "#FFFFFF",
       textAlign: "center",
       marginBottom: 32,
     },
@@ -206,7 +206,7 @@ const getStyles = (c: any) =>
     footerText: {
       textAlign: "center",
       marginTop: 24,
-      color: c.sub,
+      color: "#FFFFFF",
     },
     footerLink: {
       color: c.primary,
