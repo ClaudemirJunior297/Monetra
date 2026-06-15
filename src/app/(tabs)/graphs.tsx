@@ -10,7 +10,8 @@ import { useFocusEffect } from "expo-router";
 import { useCallback } from "react";
 
 // Importa cores e estilos
-import { colors, spacing, typography } from "@/styles/theme";
+import { spacing, typography } from "@/styles/theme";
+import { useColors } from "@/hooks/useColors";
 
 // Importa o contexto das transações
 import { useTransactions } from "@/contexts/TransactionContext";
@@ -24,6 +25,7 @@ const currency = (value: number) =>
 
 // Função principal da tela
 export default function Graphs() {
+  const c = useColors();
 
   // Pega dados e funções das transações
   const { summary, transactions, loading, error, refresh } = useTransactions();
@@ -40,6 +42,147 @@ export default function Graphs() {
     }, [refresh])
   );
 
+
+
+  const styles = StyleSheet.create({
+
+  container: {
+    flex: 1,
+    backgroundColor: c.bg
+  },
+
+  header: {
+    backgroundColor: c.card,
+    padding: spacing.lg,
+    paddingTop: spacing.xxl,
+    alignItems: "center",
+    borderBottomWidth: 1,
+    borderBottomColor: c.border
+  },
+
+  headerTitle: {
+    ...typography.title,
+    color: c.text
+  },
+
+  headerSubtitle: {
+    ...typography.body,
+    color: c.sub,
+    marginTop: spacing.xs,
+    textAlign: "center"
+  },
+
+  // CORRIGIDO: alert -> error
+  error: {
+    color: c.error,
+    padding: spacing.lg
+  },
+
+  totalCard: {
+    backgroundColor: c.card,
+    margin: spacing.lg,
+    padding: spacing.lg,
+    borderRadius: 8,
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: c.border
+  },
+
+  totalLabel: {
+    ...typography.body,
+    color: c.sub
+  },
+
+  totalValue: {
+    ...typography.title,
+    fontSize: 34,
+    color: c.expense,
+    marginTop: spacing.sm
+  },
+
+  totalHint: {
+    ...typography.caption,
+    color: c.sub,
+    marginTop: spacing.sm
+  },
+
+  chartContainer: {
+    padding: spacing.lg
+  },
+
+  sectionTitle: {
+    ...typography.subtitle,
+    color: c.text,
+    marginBottom: spacing.md
+  },
+
+  categoryItem: {
+    marginBottom: spacing.md
+  },
+
+  categoryHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: spacing.xs
+  },
+
+  colorDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    marginRight: spacing.sm,
+    backgroundColor: c.primary
+  },
+
+  categoryName: {
+    ...typography.body,
+    color: c.text,
+    flex: 1
+  },
+
+  categoryPercentage: {
+    ...typography.body,
+    color: c.sub
+  },
+
+  categoryAmount: {
+    ...typography.caption,
+    color: c.sub,
+    marginTop: spacing.xs
+  },
+
+  progressBar: {
+    height: 8,
+    backgroundColor: c.border,
+    borderRadius: 4,
+    overflow: "hidden"
+  },
+
+  progressFill: {
+    height: "100%",
+    borderRadius: 4,
+    backgroundColor: c.primary
+  },
+
+  stateBox: {
+    padding: spacing.xl,
+    alignItems: "center",
+    gap: spacing.sm
+  },
+
+  emptyTitle: {
+    ...typography.subtitle,
+    color: c.text,
+    textAlign: "center"
+  },
+
+  emptyText: {
+    ...typography.body,
+    color: c.sub,
+    textAlign: "center"
+  },
+});
+
   return (
 
     // Tela com rolagem
@@ -51,7 +194,7 @@ export default function Graphs() {
         <RefreshControl
           refreshing={loading}
           onRefresh={refresh}
-          tintColor={colors.primary}
+          tintColor={c.primary}
         />
       }
     >
@@ -75,7 +218,7 @@ export default function Graphs() {
       {/* Loading */}
       {loading && transactions.length === 0 ? (
         <View style={styles.stateBox}>
-          <ActivityIndicator color={colors.primary} />
+          <ActivityIndicator color={c.primary} />
         </View>
       ) : null}
 
@@ -127,141 +270,3 @@ export default function Graphs() {
 }
 
 // Estilos da tela
-const styles = StyleSheet.create({
-
-  container: {
-    flex: 1,
-    backgroundColor: colors.background
-  },
-
-  header: {
-    backgroundColor: colors.card,
-    padding: spacing.lg,
-    paddingTop: spacing.xxl,
-    alignItems: "center",
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border
-  },
-
-  headerTitle: {
-    ...typography.title,
-    color: colors.white
-  },
-
-  headerSubtitle: {
-    ...typography.body,
-    color: colors.textSecondary,
-    marginTop: spacing.xs,
-    textAlign: "center"
-  },
-
-  // CORRIGIDO: alert -> error
-  error: {
-    color: colors.error,
-    padding: spacing.lg
-  },
-
-  totalCard: {
-    backgroundColor: colors.card,
-    margin: spacing.lg,
-    padding: spacing.lg,
-    borderRadius: 8,
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: colors.border
-  },
-
-  totalLabel: {
-    ...typography.body,
-    color: colors.textSecondary
-  },
-
-  totalValue: {
-    ...typography.title,
-    fontSize: 34,
-    color: colors.expense,
-    marginTop: spacing.sm
-  },
-
-  totalHint: {
-    ...typography.caption,
-    color: colors.textSecondary,
-    marginTop: spacing.sm
-  },
-
-  chartContainer: {
-    padding: spacing.lg
-  },
-
-  sectionTitle: {
-    ...typography.subtitle,
-    color: colors.white,
-    marginBottom: spacing.md
-  },
-
-  categoryItem: {
-    marginBottom: spacing.md
-  },
-
-  categoryHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: spacing.xs
-  },
-
-  colorDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    marginRight: spacing.sm,
-    backgroundColor: colors.category
-  },
-
-  categoryName: {
-    ...typography.body,
-    color: colors.text,
-    flex: 1
-  },
-
-  categoryPercentage: {
-    ...typography.body,
-    color: colors.textSecondary
-  },
-
-  categoryAmount: {
-    ...typography.caption,
-    color: colors.textSecondary,
-    marginTop: spacing.xs
-  },
-
-  progressBar: {
-    height: 8,
-    backgroundColor: colors.border,
-    borderRadius: 4,
-    overflow: "hidden"
-  },
-
-  progressFill: {
-    height: "100%",
-    borderRadius: 4,
-    backgroundColor: colors.category
-  },
-
-  stateBox: {
-    padding: spacing.xl,
-    alignItems: "center",
-    gap: spacing.sm
-  },
-
-  emptyTitle: {
-    ...typography.subtitle,
-    color: colors.white,
-    textAlign: "center"
-  },
-
-  emptyText: {
-    ...typography.body,
-    color: colors.textSecondary,
-    textAlign: "center"
-  },
-});

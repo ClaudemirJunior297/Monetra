@@ -15,7 +15,8 @@ import {
 import { useFocusEffect } from "expo-router";
 import { useCallback } from "react";
 import { Feather } from "@expo/vector-icons";
-import { colors, spacing, typography } from "@/styles/theme";
+import { spacing, typography } from "@/styles/theme";
+import { useColors } from "@/hooks/useColors";
 import {
   categories,
   Category,
@@ -37,6 +38,7 @@ const parseAmount = (value: string) =>
 
 // Função principal da tela de listagem de transações
 export default function Transactions() {
+  const c = useColors();
 
   const {
     transactions,
@@ -129,21 +131,55 @@ export default function Transactions() {
       </View>
       <Text style={[
         styles.transactionAmount,
-        { color: item.type === "income" ? colors.success : colors.expense }
+        { color: item.type === "income" ? c.income : c.expense }
       ]}>
         {item.type === "income" ? "+ " : "- "}
         {currency(item.amount)}
       </Text>
       <View style={styles.actions}>
         <TouchableOpacity style={styles.iconButton} onPress={() => openEdit(item)}>
-          <Feather name="edit-2" size={18} color={colors.text} />
+          <Feather name="edit-2" size={18} color={c.text} />
         </TouchableOpacity>
         <TouchableOpacity style={styles.iconButton} onPress={() => confirmDelete(item)}>
-          <Feather name="trash-2" size={18} color={colors.expense} />
+          <Feather name="trash-2" size={18} color={c.expense} />
         </TouchableOpacity>
       </View>
     </View>
   );
+
+  const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: c.bg },
+  list: { padding: spacing.md },
+  emptyList: { flex: 1, alignItems: "center" as const, justifyContent: "center" as const, padding: 32 },
+  error: { color: c.error, padding: 16 },
+  emptyText: { color: c.sub, textAlign: "center" as const },
+  stateBox: { flex: 1, alignItems: "center" as const, justifyContent: "center" as const },
+  transactionItem: { flexDirection: "row" as const, alignItems: "center" as const, backgroundColor: c.card, padding: 16, borderRadius: 12, marginBottom: 8, borderWidth: 1, borderColor: c.border, gap: 8 },
+  transactionInfo: { flex: 1, minWidth: 0 },
+  transactionDesc: { color: c.text, fontWeight: "600" as const, marginBottom: 4, fontSize: 14 },
+  transactionMeta: { color: c.sub, fontSize: 12 },
+  transactionAmount: { fontSize: 15, fontWeight: "600" as const },
+  actions: { flexDirection: "row" as const, gap: 4 },
+  iconButton: { width: 34, height: 34, alignItems: "center" as const, justifyContent: "center" as const, borderRadius: 8, backgroundColor: c.bg },
+  modalOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.72)", alignItems: "center" as const, justifyContent: "center" as const, padding: 24 },
+  modalContent: { width: "100%" as const, backgroundColor: c.card, borderRadius: 16, padding: 20, borderWidth: 1, borderColor: c.border, gap: 12 },
+  modalTitle: { color: c.text, fontSize: 18, fontWeight: "700" as const },
+  input: { backgroundColor: c.bg, color: c.text, padding: 14, borderRadius: 10, borderWidth: 1, borderColor: c.border },
+  typeRow: { flexDirection: "row" as const, gap: 12 },
+  typeButton: { flex: 1, padding: 12, borderRadius: 10, alignItems: "center" as const, backgroundColor: c.bg, borderWidth: 1, borderColor: c.border },
+  expenseActive: { backgroundColor: c.expense, borderColor: c.expense },
+  incomeActive: { backgroundColor: c.income, borderColor: c.income },
+  typeText: { color: c.text, fontWeight: "700" as const },
+  categoriesGrid: { flexDirection: "row" as const, flexWrap: "wrap" as const, gap: 8 },
+  categoryButton: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8, backgroundColor: c.bg, borderWidth: 1, borderColor: c.border },
+  categoryButtonActive: { backgroundColor: c.primary, borderColor: c.primary },
+  categoryText: { color: c.text, fontSize: 13 },
+  modalActions: { flexDirection: "row" as const, justifyContent: "flex-end" as const, gap: 12 },
+  cancelButton: { padding: 12 },
+  cancelText: { color: c.sub, fontWeight: "700" as const },
+  saveButton: { backgroundColor: c.primary, paddingHorizontal: 20, paddingVertical: 12, borderRadius: 10 },
+  saveText: { color: "#fff", fontWeight: "700" as const },
+});
 
   return (
     <View style={styles.container}>
@@ -151,7 +187,7 @@ export default function Transactions() {
 
       {loading && transactions.length === 0 ? (
         <View style={styles.stateBox}>
-          <ActivityIndicator color={colors.primary} />
+          <ActivityIndicator color={c.primary} />
         </View>
       ) : (
         <FlatList
@@ -180,7 +216,7 @@ export default function Transactions() {
               value={description}
               onChangeText={setDescription}
               placeholder="Descrição"
-              placeholderTextColor={colors.textSecondary}
+              placeholderTextColor={c.sub}
             />
 
             <TextInput
@@ -189,7 +225,7 @@ export default function Transactions() {
               onChangeText={setAmount}
               keyboardType="decimal-pad"
               placeholder="Valor"
-              placeholderTextColor={colors.textSecondary}
+              placeholderTextColor={c.sub}
             />
 
             <View style={styles.typeRow}>
@@ -234,171 +270,3 @@ export default function Transactions() {
   );
 }
 
-// ========== ESTILOS DA TELA ==========
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background
-  },
-  list: {
-    padding: spacing.md
-  },
-  emptyList: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    padding: spacing.xl
-  },
-  error: {
-    color: colors.error,
-    padding: spacing.md
-  },
-  emptyText: {
-    ...typography.body,
-    color: colors.textSecondary,
-    textAlign: "center"
-  },
-  stateBox: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center"
-  },
-  transactionItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: colors.card,
-    padding: spacing.md,
-    borderRadius: 8,
-    marginBottom: spacing.sm,
-    borderWidth: 1,
-    borderColor: colors.border,
-    gap: spacing.sm
-  },
-  transactionInfo: {
-    flex: 1,
-    minWidth: 0
-  },
-  transactionDesc: {
-    ...typography.body,
-    color: colors.white,
-    fontWeight: "600",
-    marginBottom: 4
-  },
-  transactionMeta: {
-    ...typography.caption,
-    color: colors.textSecondary
-  },
-  transactionAmount: {
-    ...typography.subtitle,
-    fontSize: 15,
-    fontWeight: "600"
-  },
-  actions: {
-    flexDirection: "row",
-    gap: spacing.xs
-  },
-  iconButton: {
-    width: 34,
-    height: 34,
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: 8,
-    backgroundColor: colors.background
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.72)",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: spacing.lg
-  },
-  modalContent: {
-    width: "100%",
-    maxWidth: 520,
-    backgroundColor: colors.card,
-    borderRadius: 8,
-    padding: spacing.lg,
-    borderWidth: 1,
-    borderColor: colors.border,
-    gap: spacing.md
-  },
-  modalTitle: {
-    ...typography.subtitle,
-    color: colors.white
-  },
-  input: {
-    backgroundColor: colors.background,
-    color: colors.white,
-    padding: spacing.md,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: colors.border
-  },
-  typeRow: {
-    flexDirection: "row",
-    gap: spacing.md
-  },
-  typeButton: {
-    flex: 1,
-    padding: spacing.md,
-    borderRadius: 8,
-    alignItems: "center",
-    backgroundColor: colors.background,
-    borderWidth: 1,
-    borderColor: colors.border
-  },
-  expenseActive: {
-    backgroundColor: colors.expense,
-    borderColor: colors.expense
-  },
-  incomeActive: {
-    backgroundColor: colors.success,
-    borderColor: colors.success
-  },
-  typeText: {
-    color: colors.white,
-    fontWeight: "700"
-  },
-  categoriesGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: spacing.sm
-  },
-  categoryButton: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    borderRadius: 8,
-    backgroundColor: colors.background,
-    borderWidth: 1,
-    borderColor: colors.border
-  },
-  categoryButtonActive: {
-    backgroundColor: colors.category,
-    borderColor: colors.category
-  },
-  categoryText: {
-    color: colors.white
-  },
-  modalActions: {
-    flexDirection: "row",
-    justifyContent: "flex-end",
-    gap: spacing.md
-  },
-  cancelButton: {
-    padding: spacing.md
-  },
-  cancelText: {
-    color: colors.textSecondary,
-    fontWeight: "700"
-  },
-  saveButton: {
-    backgroundColor: colors.primary,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-    borderRadius: 8
-  },
-  saveText: {
-    color: colors.white,
-    fontWeight: "700"
-  },
-});

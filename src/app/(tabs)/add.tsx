@@ -15,6 +15,7 @@ import {
 import { router } from "expo-router";
 import { colors, spacing, typography } from "@/styles/theme";
 import { categories, Category, TransactionType } from "@/types/transaction";
+import { useColors } from "@/hooks/useColors";
 import { useTransactions } from "@/contexts/TransactionContext";
 
 // Converte valor string para número (ex: "1.234,56" => 1234.56)
@@ -22,6 +23,7 @@ const parseAmount = (value: string) =>
   Number(value.replace(/\./g, "").replace(",", "."));
 
 export default function AddTransaction() {
+  const c = useColors();
   const { addTransaction } = useTransactions();
 
   const [description, setDescription] = useState("");
@@ -75,6 +77,98 @@ export default function AddTransaction() {
     }
   };
 
+  const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: c.bg
+  },
+  form: {
+    padding: spacing.lg,
+    paddingBottom: spacing.xxl
+  },
+  label: {
+    ...typography.body,
+    color: c.text,
+    marginBottom: spacing.xs,
+    marginTop: spacing.md
+  },
+  input: {
+    backgroundColor: c.card,
+    color: c.text,
+    padding: spacing.md,
+    borderRadius: 8,
+    fontSize: 16,
+    borderWidth: 1,
+    borderColor: c.border
+  },
+  typeRow: {
+    flexDirection: "row",
+    gap: spacing.md,
+    marginTop: spacing.xs
+  },
+  typeButton: {
+    flex: 1,
+    padding: spacing.md,
+    backgroundColor: c.card,
+    borderRadius: 8,
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: c.border
+  },
+  expenseActive: {
+    backgroundColor: c.expense,
+    borderColor: c.expense
+  },
+  incomeActive: {
+    backgroundColor: c.income,
+    borderColor: c.income
+  },
+  typeText: {
+    color: c.text,
+    fontWeight: "600"
+  },
+  activeText: {
+    color: c.text
+  },
+  categoriesGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: spacing.sm,
+    marginTop: spacing.xs
+  },
+  categoryButton: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    backgroundColor: c.card,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: c.border
+  },
+  categoryButtonActive: {
+    backgroundColor: c.primary,
+    borderColor: c.primary
+  },
+  categoryText: {
+    color: c.text
+  },
+  saveButton: {
+    backgroundColor: c.primary,
+    padding: spacing.md,
+    borderRadius: 8,
+    alignItems: "center",
+    marginTop: spacing.xl,
+    minHeight: 52,
+    justifyContent: "center"
+  },
+  disabledButton: {
+    opacity: 0.65
+  },
+  saveButtonText: {
+    color: c.text,
+    fontSize: 18,
+    fontWeight: "bold"
+  },
+})
   return (
     <ScrollView style={styles.container} keyboardShouldPersistTaps="handled">
       <View style={styles.form}>
@@ -83,7 +177,7 @@ export default function AddTransaction() {
         <TextInput
           style={styles.input}
           placeholder="Descrição da transação"
-          placeholderTextColor={colors.textSecondary}
+          placeholderTextColor={c.sub}
           value={description}
           onChangeText={setDescription}
         />
@@ -92,7 +186,7 @@ export default function AddTransaction() {
         <TextInput
           style={styles.input}
           placeholder="0,00"
-          placeholderTextColor={colors.textSecondary}
+          placeholderTextColor={c.sub}
           keyboardType="decimal-pad"
           value={amount}
           onChangeText={setAmount}
@@ -139,7 +233,7 @@ export default function AddTransaction() {
           disabled={saving}
         >
           {saving ? (
-            <ActivityIndicator color={colors.white} />
+            <ActivityIndicator color={c.text} />
           ) : (
             <Text style={styles.saveButtonText}>Salvar transação</Text>
           )}
@@ -149,96 +243,4 @@ export default function AddTransaction() {
     </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background
-  },
-  form: {
-    padding: spacing.lg,
-    paddingBottom: spacing.xxl
-  },
-  label: {
-    ...typography.body,
-    color: colors.white,
-    marginBottom: spacing.xs,
-    marginTop: spacing.md
-  },
-  input: {
-    backgroundColor: colors.card,
-    color: colors.white,
-    padding: spacing.md,
-    borderRadius: 8,
-    fontSize: 16,
-    borderWidth: 1,
-    borderColor: colors.border
-  },
-  typeRow: {
-    flexDirection: "row",
-    gap: spacing.md,
-    marginTop: spacing.xs
-  },
-  typeButton: {
-    flex: 1,
-    padding: spacing.md,
-    backgroundColor: colors.card,
-    borderRadius: 8,
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: colors.border
-  },
-  expenseActive: {
-    backgroundColor: colors.expense,
-    borderColor: colors.expense
-  },
-  incomeActive: {
-    backgroundColor: colors.success,
-    borderColor: colors.success
-  },
-  typeText: {
-    color: colors.text,
-    fontWeight: "600"
-  },
-  activeText: {
-    color: colors.white
-  },
-  categoriesGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: spacing.sm,
-    marginTop: spacing.xs
-  },
-  categoryButton: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    backgroundColor: colors.card,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: colors.border
-  },
-  categoryButtonActive: {
-    backgroundColor: colors.category,
-    borderColor: colors.category
-  },
-  categoryText: {
-    color: colors.text
-  },
-  saveButton: {
-    backgroundColor: colors.primary,
-    padding: spacing.md,
-    borderRadius: 8,
-    alignItems: "center",
-    marginTop: spacing.xl,
-    minHeight: 52,
-    justifyContent: "center"
-  },
-  disabledButton: {
-    opacity: 0.65
-  },
-  saveButtonText: {
-    color: colors.white,
-    fontSize: 18,
-    fontWeight: "bold"
-  },
-});
+;

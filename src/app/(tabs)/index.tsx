@@ -1,313 +1,224 @@
-// Função: Mostrar o painel principal do aplicativo
-
-// Importa componentes do React Native
 import {
   ActivityIndicator,
+  Animated,
   RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
-  View
+  View,
 } from "react-native";
-
-// Importa navegação e atualização ao abrir a tela
 import { router, useFocusEffect } from "expo-router";
-
-// Importa hook para otimizar funções
-import { useCallback } from "react";
-
-// Importa cores e estilos
-import { colors, spacing, typography } from "@/styles/theme";
-
-// Importa o contexto das transações
+import { useCallback, useRef, useEffect } from "react";
+import { Feather } from "@expo/vector-icons";
 import { useTransactions } from "@/contexts/TransactionContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { useColors } from "@/hooks/useColors";
 
-// Função: Formatar valores em moeda brasileira
-const currency = (value: number) =>
-  value.toLocaleString("pt-BR", {
-    style: "currency",
-    currency: "BRL"
-  });
+const currency = (v: number) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
-// Função principal da tela
-export default function Dashboard() {
+const CATEGORY_META: Record<string, { icon: string; color: string; bg: string }> = {
+  "Alimentacao": { icon: "coffee", color: "#FF8C42", bg: "#3A2010" },
+  "Alimentação": { icon: "coffee", color: "#FF8C42", bg: "#3A2010" },
+  "Transporte": { icon: "navigation", color: "#4FC3F7", bg: "#0A2A3A" },
+  "Lazer": { icon: "music", color: "#CE93D8", bg: "#2A1A3A" },
+  "Saude": { icon: "heart", color: "#EF9A9A", bg: "#3A1010" },
+  "Saúde": { icon: "heart", color: "#EF9A9A", bg: "#3A1010" },
+  "Educacao": { icon: "book", color: "#80CBC4", bg: "#0A2A2A" },
+  "Educação": { icon: "book", color: "#80CBC4", bg: "#0A2A2A" },
+  "Renda": { icon: "trending-up", color: "#66BB6A", bg: "#0A2A10" },
+  "Renda Extra": { icon: "star", color: "#FFD54F", bg: "#2A2A0A" },
+};
+const getMeta = (cat: string) => CATEGORY_META[cat] || { icon: "tag", color: "#c859ff", bg: "#1A1A2E" };
 
-  // Pega os dados das transações
-  const {
-    transactions,
-    summary,
-    loading,
-    error,
-    refresh
-  } = useTransactions();
+function BalanceCard({ summary }: { summary: any }) {
+  const { user } = useAuth();
+  const c = useColors();
+  const fade = useRef(new Animated.Value(0)).current;
+  const slide = useRef(new Animated.Value(24)).current;
 
-  // Organiza categorias pelo maior valor
-  const categoryEntries = Object.entries(summary.categoryBreakdown)
-    .sort(([, a], [, b]) => (b || 0) - (a || 0));
-
-  // Pega as últimas 5 transações
-  const recentTransactions = transactions.slice(0, 5);
-
-  // Atualiza os dados ao abrir a tela
-  useFocusEffect(
-    useCallback(() => {
-      refresh();
-    }, [refresh])
-  );
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fade, { toValue: 1, duration: 500, useNativeDriver: true }),
+      Animated.spring(slide, { toValue: 0, tension: 60, friction: 8, useNativeDriver: true }),
+    ]).start();
+  }, []);
 
   return (
-    <ScrollView
-      style={styles.container}
-      refreshControl={
-        <RefreshControl
-          refreshing={loading}
-          onRefresh={refresh}
-          tintColor={colors.primary}
-        />
-      }
-    >
-      {/* Cabeçalho */}
-      <View style={styles.header}>
-        <Text style={styles.appName}>Monetra</Text>
-        <Text style={styles.balanceLabel}>Saldo disponível</Text>
-        <Text style={styles.balanceValue}>{currency(summary.balance)}</Text>
-
-        <View style={styles.summaryRow}>
-          {/* Receitas */}
-          <View style={styles.summaryItem}>
-            <Text style={styles.summaryLabel}>Receitas</Text>
-            <Text style={[styles.summaryValue, { color: colors.success }]}>
-              {currency(summary.totalIncome)}
-            </Text>
+    <Animated.View style={[{ backgroundColor: c.card, borderRadius: 24, padding: 22, marginBottom: 24, borderWidth: 1, borderColor: c.border }, { opacity: fade, transform: [{ translateY: slide }] }]}>
+      <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
+        <View>
+          <Text style={{ fontSize: 14, color: c.sub, marginBottom: 4 }}>Ola, {user?.name?.split(" ")[0] || "usuario"}</Text>
+          <Text style={{ fontSize: 11, color: c.sub, letterSpacing: 1 }}>SALDO DISPONIVEL</Text>
+        </View>
+        <View style={{ width: 38, height: 38, borderRadius: 19, backgroundColor: c.border, alignItems: "center", justifyContent: "center" }}>
+          <Feather name="user" size={18} color={c.primary} />
+        </View>
+      </View>
+      <Text style={{ fontSize: 38, fontWeight: "800", color: c.text, letterSpacing: -1, marginBottom: 18 }}>{currency(summary.balance)}</Text>
+      <View style={{ height: 1, backgroundColor: c.border, marginBottom: 18 }} />
+      <View style={{ flexDirection: "row", alignItems: "center" }}>
+        <View style={{ flex: 1, flexDirection: "row", alignItems: "center", gap: 10 }}>
+          <View style={{ width: 30, height: 30, borderRadius: 9, backgroundColor: "#0A2A10", alignItems: "center", justifyContent: "center" }}>
+            <Feather name="arrow-down-circle" size={15} color="#66BB6A" />
           </View>
-
-          {/* Despesas */}
-          <View style={styles.summaryItem}>
-            <Text style={styles.summaryLabel}>Despesas</Text>
-            <Text style={[styles.summaryValue, { color: colors.expense }]}>
-              {currency(summary.totalExpense)}
-            </Text>
+          <View>
+            <Text style={{ fontSize: 10, color: c.sub, textTransform: "uppercase", letterSpacing: 0.5 }}>Receitas</Text>
+            <Text style={{ fontSize: 14, fontWeight: "700", color: "#66BB6A", marginTop: 1 }}>{currency(summary.totalIncome)}</Text>
+          </View>
+        </View>
+        <View style={{ width: 1, height: 28, backgroundColor: c.border, marginHorizontal: 14 }} />
+        <View style={{ flex: 1, flexDirection: "row", alignItems: "center", gap: 10 }}>
+          <View style={{ width: 30, height: 30, borderRadius: 9, backgroundColor: "#3A1010", alignItems: "center", justifyContent: "center" }}>
+            <Feather name="arrow-up-circle" size={15} color="#ef5350" />
+          </View>
+          <View>
+            <Text style={{ fontSize: 10, color: c.sub, textTransform: "uppercase", letterSpacing: 0.5 }}>Despesas</Text>
+            <Text style={{ fontSize: 14, fontWeight: "700", color: "#ef5350", marginTop: 1 }}>{currency(summary.totalExpense)}</Text>
           </View>
         </View>
       </View>
+    </Animated.View>
+  );
+}
 
-      {/* Mensagem de erro */}
-      {error ? <Text style={styles.error}>{error}</Text> : null}
+function CategoryRow({ category, amount, total, index }: any) {
+  const c = useColors();
+  const fade = useRef(new Animated.Value(0)).current;
+  const barW = useRef(new Animated.Value(0)).current;
+  const meta = getMeta(category);
+  const pct = total > 0 ? Math.min(((amount || 0) / total) * 100, 100) : 0;
 
-      {/* Loading */}
-      {loading && transactions.length === 0 ? (
-        <View style={styles.stateBox}>
-          <ActivityIndicator color={colors.primary} />
-          <Text style={styles.stateText}>Carregando dados financeiros...</Text>
+  useEffect(() => {
+    Animated.sequence([
+      Animated.delay(index * 70),
+      Animated.parallel([
+        Animated.timing(fade, { toValue: 1, duration: 300, useNativeDriver: true }),
+        Animated.spring(barW, { toValue: pct, tension: 50, friction: 8, useNativeDriver: false }),
+      ]),
+    ]).start();
+  }, [pct]);
+
+  return (
+    <Animated.View style={[{ flexDirection: "row", alignItems: "center", padding: 14, gap: 12, borderBottomWidth: 1, borderBottomColor: c.border }, { opacity: fade }]}>
+      <View style={{ width: 32, height: 32, borderRadius: 10, backgroundColor: meta.bg, alignItems: "center", justifyContent: "center" }}>
+        <Feather name={meta.icon as any} size={14} color={meta.color} />
+      </View>
+      <View style={{ flex: 1 }}>
+        <View style={{ flexDirection: "row", justifyContent: "space-between", marginBottom: 6 }}>
+          <Text style={{ fontSize: 13, fontWeight: "600", color: c.text }}>{category}</Text>
+          <Text style={{ fontSize: 13, color: c.sub }}>{currency(amount || 0)}</Text>
+        </View>
+        <View style={{ height: 5, backgroundColor: c.border, borderRadius: 3, overflow: "hidden" }}>
+          <Animated.View style={{ height: "100%", borderRadius: 3, backgroundColor: meta.color, width: barW.interpolate({ inputRange: [0, 100], outputRange: ["0%", "100%"] }) }} />
+        </View>
+      </View>
+    </Animated.View>
+  );
+}
+
+function TxRow({ transaction, index }: any) {
+  const c = useColors();
+  const fade = useRef(new Animated.Value(0)).current;
+  const slide = useRef(new Animated.Value(12)).current;
+  const meta = getMeta(transaction.category);
+  const isIncome = transaction.type === "income";
+
+  useEffect(() => {
+    Animated.sequence([
+      Animated.delay(index * 60),
+      Animated.parallel([
+        Animated.timing(fade, { toValue: 1, duration: 250, useNativeDriver: true }),
+        Animated.spring(slide, { toValue: 0, tension: 80, friction: 8, useNativeDriver: true }),
+      ]),
+    ]).start();
+  }, []);
+
+  return (
+    <Animated.View style={[{ flexDirection: "row", alignItems: "center", padding: 14, gap: 12, borderBottomWidth: 1, borderBottomColor: c.border }, { opacity: fade, transform: [{ translateX: slide }] }]}>
+      <View style={{ width: 36, height: 36, borderRadius: 11, backgroundColor: meta.bg, alignItems: "center", justifyContent: "center" }}>
+        <Feather name={meta.icon as any} size={15} color={meta.color} />
+      </View>
+      <View style={{ flex: 1 }}>
+        <Text style={{ fontSize: 14, fontWeight: "600", color: c.text }} numberOfLines={1}>{transaction.description}</Text>
+        <Text style={{ fontSize: 11, color: c.sub, marginTop: 2 }}>{transaction.category} · {transaction.date.toLocaleDateString("pt-BR")}</Text>
+      </View>
+      <Text style={{ fontSize: 14, fontWeight: "700", color: isIncome ? "#66BB6A" : "#ef5350" }}>
+        {isIncome ? "+" : "-"}{currency(transaction.amount)}
+      </Text>
+    </Animated.View>
+  );
+}
+
+export default function Dashboard() {
+  const c = useColors();
+  const { transactions, summary, loading, error, refresh } = useTransactions();
+  const cats = Object.entries(summary.categoryBreakdown).sort(([, a], [, b]) => (b || 0) - (a || 0));
+  const recent = transactions.slice(0, 5);
+
+  useFocusEffect(useCallback(() => { refresh(); }, [refresh]));
+
+  return (
+    <ScrollView style={{ flex: 1, backgroundColor: c.bg }} contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 52 }} showsVerticalScrollIndicator={false}
+      refreshControl={<RefreshControl refreshing={loading} onRefresh={refresh} tintColor={c.primary} />}>
+
+      <BalanceCard summary={summary} />
+
+      {error ? (
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: "#3A1010", borderRadius: 12, padding: 12, marginBottom: 16 }}>
+          <Feather name="alert-circle" size={14} color="#ef4444" />
+          <Text style={{ color: "#ef4444", fontSize: 13, flex: 1 }}>{error}</Text>
         </View>
       ) : null}
 
-      {/* Mensagem sem transações */}
+      {loading && transactions.length === 0 ? (
+        <View style={{ alignItems: "center", paddingVertical: 40 }}>
+          <ActivityIndicator color={c.primary} size="large" />
+        </View>
+      ) : null}
+
       {!loading && transactions.length === 0 ? (
-        <View style={styles.stateBox}>
-          <Text style={styles.stateTitle}>Nenhuma transação registrada</Text>
-          <Text style={styles.stateText}>
-            Cadastre sua primeira receita ou despesa para iniciar o painel.
-          </Text>
-          <TouchableOpacity style={styles.primaryButton} onPress={() => router.push("/(tabs)/add")}>
-            <Text style={styles.primaryButtonText}>Registrar transação</Text>
+        <View style={{ alignItems: "center", paddingVertical: 48, gap: 10 }}>
+          <View style={{ width: 72, height: 72, borderRadius: 36, backgroundColor: c.card, alignItems: "center", justifyContent: "center", marginBottom: 6 }}>
+            <Feather name="inbox" size={36} color={c.primary} />
+          </View>
+          <Text style={{ fontSize: 17, fontWeight: "700", color: c.text }}>Nenhuma transacao</Text>
+          <Text style={{ fontSize: 13, color: c.sub, textAlign: "center", lineHeight: 20, paddingHorizontal: 24 }}>Registre sua primeira receita ou despesa.</Text>
+          <TouchableOpacity style={{ flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: c.primary, paddingHorizontal: 20, paddingVertical: 12, borderRadius: 14, marginTop: 6 }}
+            onPress={() => router.push("/(tabs)/add")}>
+            <Feather name="plus" size={16} color="#fff" />
+            <Text style={{ color: "#fff", fontWeight: "700", fontSize: 14 }}>Registrar transacao</Text>
           </TouchableOpacity>
         </View>
       ) : null}
 
-      {/* Categorias */}
-      {categoryEntries.length > 0 ? (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Gastos por categoria</Text>
-          {categoryEntries.map(([category, amount]) => {
-            const percentage = summary.totalExpense > 0
-              ? ((amount || 0) / summary.totalExpense) * 100
-              : 0;
-
-            return (
-              <View key={category} style={styles.categoryItem}>
-                <View style={styles.categoryHeader}>
-                  <Text style={styles.categoryName}>{category}</Text>
-                  <Text style={styles.categoryPercentage}>{percentage.toFixed(0)}%</Text>
-                </View>
-                <View style={styles.progressBar}>
-                  <View style={[styles.progressFill, { width: `${Math.min(percentage, 100)}%` }]} />
-                </View>
-                <Text style={styles.categoryAmount}>{currency(amount || 0)}</Text>
-              </View>
-            );
-          })}
+      {cats.length > 0 ? (
+        <View style={{ marginBottom: 22 }}>
+          <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+            <Text style={{ fontSize: 16, fontWeight: "700", color: c.text }}>Gastos por categoria</Text>
+            <Text style={{ fontSize: 12, color: c.sub }}>{cats.length} categorias</Text>
+          </View>
+          <View style={{ backgroundColor: c.card, borderRadius: 20, overflow: "hidden", borderWidth: 1, borderColor: c.border }}>
+            {cats.map(([cat, amt], i) => <CategoryRow key={cat} category={cat} amount={amt} total={summary.totalExpense} index={i} />)}
+          </View>
         </View>
       ) : null}
 
-      {/* Transações recentes */}
-      {recentTransactions.length > 0 ? (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Transações recentes</Text>
-          {recentTransactions.map((transaction) => (
-            <View key={transaction.id} style={styles.transactionItem}>
-              <View style={styles.transactionInfo}>
-                <Text style={styles.transactionDesc}>{transaction.description}</Text>
-                <Text style={styles.transactionCategory}>
-                  {transaction.category} - {transaction.date.toLocaleDateString("pt-BR")}
-                </Text>
-              </View>
-              <Text style={[
-                styles.transactionAmount,
-                { color: transaction.type === "income" ? colors.success : colors.expense }
-              ]}>
-                {transaction.type === "income" ? "+ " : "- "}
-                {currency(transaction.amount)}
-              </Text>
-            </View>
-          ))}
+      {recent.length > 0 ? (
+        <View style={{ marginBottom: 22 }}>
+          <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+            <Text style={{ fontSize: 16, fontWeight: "700", color: c.text }}>Recentes</Text>
+            <TouchableOpacity onPress={() => router.push("/(tabs)/transaction")}>
+              <Text style={{ fontSize: 13, color: c.primary, fontWeight: "600" }}>Ver todas</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={{ backgroundColor: c.card, borderRadius: 20, overflow: "hidden", borderWidth: 1, borderColor: c.border }}>
+            {recent.map((tx, i) => <TxRow key={tx.id} transaction={tx} index={i} />)}
+          </View>
         </View>
       ) : null}
 
+      <View style={{ height: 100 }} />
     </ScrollView>
   );
 }
-
-// ========== ESTILOS DA TELA ==========
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background
-  },
-  header: {
-    backgroundColor: colors.card,
-    padding: spacing.lg,
-    paddingTop: spacing.xxl,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border
-  },
-  appName: {
-    ...typography.title,
-    color: colors.primary,
-    marginBottom: spacing.lg
-  },
-  balanceLabel: {
-    ...typography.caption,
-    color: colors.textSecondary,
-    marginBottom: spacing.xs
-  },
-  balanceValue: {
-    ...typography.title,
-    fontSize: 42,
-    color: colors.white,
-    marginBottom: spacing.lg
-  },
-  summaryRow: {
-    flexDirection: "row",
-    gap: spacing.md,
-    marginTop: spacing.md
-  },
-  summaryItem: {
-    flex: 1
-  },
-  summaryLabel: {
-    ...typography.caption,
-    color: colors.textSecondary
-  },
-  summaryValue: {
-    ...typography.subtitle,
-    fontSize: 18
-  },
-  error: {
-    color: colors.error,
-    padding: spacing.lg
-  },
-  stateBox: {
-    padding: spacing.xl,
-    alignItems: "center",
-    gap: spacing.md
-  },
-  stateTitle: {
-    ...typography.subtitle,
-    color: colors.white,
-    textAlign: "center"
-  },
-  stateText: {
-    ...typography.body,
-    color: colors.textSecondary,
-    textAlign: "center"
-  },
-  primaryButton: {
-    backgroundColor: colors.primary,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-    borderRadius: 8
-  },
-  primaryButtonText: {
-    color: colors.white,
-    fontWeight: "700"
-  },
-  section: {
-    padding: spacing.lg,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border
-  },
-  sectionTitle: {
-    ...typography.subtitle,
-    color: colors.white,
-    marginBottom: spacing.md
-  },
-  categoryItem: {
-    marginBottom: spacing.md
-  },
-  categoryHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: spacing.xs
-  },
-  categoryName: {
-    ...typography.body,
-    color: colors.text
-  },
-  categoryPercentage: {
-    ...typography.body,
-    color: colors.textSecondary
-  },
-  categoryAmount: {
-    ...typography.caption,
-    color: colors.textSecondary,
-    marginTop: spacing.xs
-  },
-  progressBar: {
-    height: 8,
-    backgroundColor: colors.border,
-    borderRadius: 4,
-    overflow: "hidden"
-  },
-  progressFill: {
-    height: "100%",
-    borderRadius: 4,
-    backgroundColor: colors.category
-  },
-  transactionItem: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingVertical: spacing.sm,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-    gap: spacing.md
-  },
-  transactionInfo: {
-    flex: 1
-  },
-  transactionDesc: {
-    ...typography.body,
-    color: colors.white
-  },
-  transactionCategory: {
-    ...typography.caption,
-    color: colors.textSecondary,
-    marginTop: 2
-  },
-  transactionAmount: {
-    ...typography.body,
-    fontWeight: "600"
-  }
-});

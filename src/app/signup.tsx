@@ -18,16 +18,18 @@ import { Link, router } from "expo-router";
 import { Input } from "@/components/Input";
 import { Button } from "@/components/Button";
 import { useAuth } from "@/contexts/AuthContext";
+import { useColors } from "@/hooks/useColors";
 
 // Cores fixas da tela
 const COLORS = {
   background: "#121212",   // Fundo escuro
-  primary: "#002ce8",      // Cor do link (azul)
+  primary: "#c859ff",      // Cor do link (azul)
   text: "#FFFFFF",         // Texto branco
   textSecondary: "#888888", // Texto secundário (cinza)
 };
 
 export default function Signup() {
+  const c = useColors();
   // Pega função de cadastro e estado de loading do contexto
   const { signUp, loading } = useAuth();
 
@@ -129,7 +131,7 @@ export default function Signup() {
     }
   };
 
-  const styles = getStyles();
+  const styles = getStyles(c);
 
   return (
     // Fecha o teclado ao tocar fora dos inputs
@@ -222,14 +224,14 @@ export default function Signup() {
 }
 
 // Estilos da tela
-const getStyles = () =>
+const getStyles = (c: any) =>
   StyleSheet.create({
     scrollContainer: {
       flexGrow: 1,
     },
     container: {
       flex: 1,
-      backgroundColor: COLORS.background,
+      backgroundColor: c.bg,
       padding: 32,
       justifyContent: "center",
     },
@@ -241,13 +243,13 @@ const getStyles = () =>
     title: {
       fontSize: 28,
       fontWeight: "900",
-      color: COLORS.text,
+      color: c.text,
       textAlign: "center",
       marginBottom: 8,
     },
     subtitle: {
       fontSize: 14,
-      color: COLORS.textSecondary,
+      color: c.textSecondary,
       textAlign: "center",
       marginBottom: 32,
     },
@@ -257,10 +259,10 @@ const getStyles = () =>
     footerText: {
       textAlign: "center",
       marginTop: 24,
-      color: COLORS.textSecondary,
+      color: c.textSecondary,
     },
     footerLink: {
-      color: COLORS.primary,
+      color: c.primary,
       fontWeight: "700",
     },
   });

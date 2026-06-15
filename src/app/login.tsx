@@ -18,6 +18,7 @@ import { Link, router } from "expo-router";
 import { Input } from "@/components/Input";
 import { Button } from "@/components/Button";
 import { useAuth } from "@/contexts/AuthContext";
+import { useColors } from "@/hooks/useColors";
 
 // Cores fixas da tela
 const COLORS = {
@@ -28,6 +29,7 @@ const COLORS = {
 };
 
 export default function Login() {
+  const c = useColors();
   // Pega função de login e estado de loading do contexto
   const { signIn, loading } = useAuth();
 
@@ -38,6 +40,7 @@ export default function Login() {
   // Estados de erro
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
+  const [loginError, setLoginError] = useState("");
   
   // Estados para saber se o campo já foi tocado
   const [touchedEmail, setTouchedEmail] = useState(false);
@@ -83,15 +86,16 @@ export default function Login() {
     if (!email || !password) return;
     if (emailError || passwordError) return;
 
+    setLoginError("");
     try {
       await signIn(email, password);
       router.replace("/(tabs)");
     } catch (err: any) {
-      console.log(err);
+      setLoginError("E-mail ou senha incorretos.");
     }
   };
 
-  const styles = getStyles();
+  const styles = getStyles(c);
 
   return (
     // Fecha o teclado ao tocar fora dos inputs
@@ -140,6 +144,9 @@ export default function Login() {
                 error={passwordError}
               />
 
+              {/* Erro de login */}
+              {loginError ? <Text style={{ color: "#ff4d4d", textAlign: "center", marginTop: -8 }}>{loginError}</Text> : null}
+
               {/* Botão entrar */}
               <Button
                 label={loading ? "Entrando..." : "Entrar"}
@@ -164,14 +171,14 @@ export default function Login() {
 }
 
 // Estilos da tela
-const getStyles = () =>
+const getStyles = (c: any) =>
   StyleSheet.create({
     scrollContainer: {
       flexGrow: 1,
     },
     container: {
       flex: 1,
-      backgroundColor: COLORS.background,
+      backgroundColor: c.bg,
       padding: 32,
       justifyContent: "center",
     },
@@ -189,7 +196,7 @@ const getStyles = () =>
     },
     subtitle: {
       fontSize: 14,
-      color: COLORS.textSecondary,
+      color: c.sub,
       textAlign: "center",
       marginBottom: 32,
     },
@@ -199,10 +206,10 @@ const getStyles = () =>
     footerText: {
       textAlign: "center",
       marginTop: 24,
-      color: COLORS.textSecondary,
+      color: c.sub,
     },
     footerLink: {
-      color: COLORS.primary,
+      color: c.primary,
       fontWeight: "700",
     },
   });
